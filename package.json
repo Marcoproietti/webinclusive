@@ -1,0 +1,28 @@
+{
+  "name":    "webinclusive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WEB.INCLUSIVE — Piattaforma gestione servizi socio-sanitari ADI",
+  "workspaces": [
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:auth":        "npm run dev --workspace=services/auth-service",
+    "dev:scheduling":  "npm run dev --workspace=services/scheduling-service",
+    "dev:presenze":    "npm run dev --workspace=services/presenze-service",
+    "dev:gateway":     "npm run dev --workspace=services/gateway",
+    "test":            "npm run test --workspaces --if-present",
+    "lint":            "npm run lint --workspaces --if-present",
+    "typecheck":       "npm run typecheck --workspaces --if-present",
+    "build":           "npm run build --workspaces --if-present",
+    "infra:up":        "docker compose -f docker-compose.dev.yml up -d",
+    "infra:down":      "docker compose -f docker-compose.dev.yml down",
+    "db:migrate:all":  "npm run db:migrate --workspaces --if-present",
+    "db:seed:auth":    "npm run db:seed --workspace=services/auth-service"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm":  ">=10.0.0"
+  }
+}

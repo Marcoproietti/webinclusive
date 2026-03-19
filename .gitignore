@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+.next/
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Prisma
+prisma/migrations/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Docker
+.dockerignore
+
+# Secrets (mai committare!)
+*.pem
+*.key
+*.p12
+*.pfx
+certs/
+secrets/

@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEB.INCLUSIVE — Infrastruttura & Deploy</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bitter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #1a1f2e;
+  --bg2: #222840;
+  --bg3: #2a3050;
+  --surface: #1e2436;
+  --border: #2e3655;
+  --border2: #3d4870;
+  --text: #dde3f5;
+  --text2: #8b95b8;
+  --text3: #4a5275;
+  --green: #4ade80;
+  --green2: #166534;
+  --blue: #60a5fa;
+  --blue2: #1d4ed8;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --teal: #2dd4bf;
+  --purple: #c084fc;
+  --orange: #fb923c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Bitter', Georgia, serif;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg, #0f1420 0%, #1a2040 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.header-title {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--teal);
+  letter-spacing: 0.08em;
+}
+.header-sub { font-size: 0.65rem; color: var(--text3); font-family: 'Fira Code', monospace; }
+
+.nav-strip {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  padding: 0 32px;
+  position: sticky;
+  top: 61px;
+  z-index: 100;
+}
+.nav-btn {
+  padding: 12px 20px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+/* ── PAGES ── */
+.page { display: none; padding: 36px 40px; max-width: 1400px; }
+.page.active { display: block; }
+
+/* ── SECTION ── */
+.sec {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sec::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-head {
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  padding: 11px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.card-body { padding: 18px; }
+
+/* ── CODE ── */
+pre.code {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.71rem;
+  line-height: 1.8;
+  overflow-x: auto;
+  color: #8b949e;
+  margin: 0;
+  counter-reset: line;
+}
+pre.code.no-border { border: none; border-radius: 0; }
+
+/* YAML syntax */
+.y-key   { color: #79c0ff; }
+.y-val   { color: #a5d6ff; }
+.y-str   { color: #a5d6ff; }
+.y-num   { color: #ff7b72; }
+.y-bool  { color: #79c0ff; }
+.y-cmt   { color: #484f58; font-style: italic; }
+.y-svc   { color: #ffa657; font-weight: 600; }
+.y-anchor{ color: #d2a8ff; }
+.y-sec   { color: #56d364; font-weight: 600; }
+
+/* NGINX syntax */
+.n-dir  { color: #79c0ff; }
+.n-val  { color: #a5d6ff; }
+.n-cmt  { color: #484f58; font-style: italic; }
+.n-blk  { color: #ffa657; }
+
+/* BASH */
+.b-cmd  { color: #56d364; }
+.b-cmt  { color: #484f58; font-style: italic; }
+.b-var  { color: #ffa657; }
+.b-str  { color: #a5d6ff; }
+.b-flag { color: #d2a8ff; }
+
+/* ── GRID ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 20px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+
+/* ── SERVICE TILE ── */
+.svc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.svc-tile {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: border-color 0.15s;
+}
+.svc-tile:hover { border-color: var(--teal); }
+.svc-name {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.svc-port {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.62rem;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+.svc-desc { font-size: 0.74rem; color: var(--text2); }
+.svc-tag {
+  display: inline-block;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.58rem;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin-top: 8px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* ── FLOW ── */
+.flow { display: flex; flex-direction: column; }
+.flow-row {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.flow-row:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 32px;
+  bottom: -12px;
+  width: 1px;
+  background: var(--border);
+}
+.flow-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.flow-content { padding-top: 4px; }
+.flow-title { font-weight: 700; font-size: 0.88rem; margin-bottom: 4px; }
+.flow-desc { font-size: 0.77rem; color: var(--text2); }
+
+/* ── TABLE ── */
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  margin-bottom: 20px;
+}
+.tbl th {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.tbl td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  color: var(--text2);
+  vertical-align: top;
+}
+.tbl tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.tbl-key  { color: var(--blue); font-weight: 500; }
+.tbl-val  { color: var(--teal); }
+.tbl-warn { color: var(--amber); }
+.tbl-ok   { color: var(--green); }
+.tbl-err  { color: var(--red); }
+
+/* COPY BTN */
+.copy-btn {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.62rem;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.copy-btn:hover { background: var(--teal); color: var(--bg); border-color: var(--teal); }
+
+/* INFO BADGES */
+.badge {
+  display: inline-block;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* NETWORK MAP */
+.network-map {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.72rem;
+  margin-bottom: 20px;
+}
+.net-zone {
+  border: 1px dashed;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.net-zone-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.net-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.net-node {
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: 1px solid;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+.net-arrow {
+  text-align: center;
+  color: var(--text3);
+  font-size: 1rem;
+  margin: 8px 0;
+}
+
+/* CHECKLIST */
+.checklist { display: flex; flex-direction: column; gap: 8px; }
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+.check-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+.check-text { color: var(--text2); }
+.check-text strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">WEB.INCLUSIVE / Infrastruttura & Deploy</div>
+    <div class="header-sub">Docker Compose · NGINX · CI/CD · Backup · Monitoring</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <span class="badge" style="background:rgba(77,222,128,0.12);color:var(--green);border:1px solid var(--green2);">Docker Compose v2</span>
+    <span class="badge" style="background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid var(--blue2);">NGINX 1.25</span>
+    <span class="badge" style="background:rgba(251,191,36,0.12);color:var(--amber);border:1px solid #78350f;">PostgreSQL 15</span>
+  </div>
+</div>
+
+<div class="nav-strip">
+  <div class="nav-btn active" onclick="show('overview',this)">Overview</div>
+  <div class="nav-btn" onclick="show('compose',this)">docker-compose.yml</div>
+  <div class="nav-btn" onclick="show('nginx',this)">NGINX Config</div>
+  <div class="nav-btn" onclick="show('postgres',this)">PostgreSQL</div>
+  <div class="nav-btn" onclick="show('cicd',this)">CI/CD Pipeline</div>
+  <div class="nav-btn" onclick="show('backup',this)">Backup & Recovery</div>
+  <div class="nav-btn" onclick="show('monitoring',this)">Monitoring</div>
+  <div class="nav-btn" onclick="show('checklist',this)">Deploy Checklist</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- OVERVIEW -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page active" id="page-overview">
+
+  <div class="sec">// Mappa servizi</div>
+
+  <div class="svc-grid">
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--blue);">nginx</div>
+      <div class="svc-port">:80 / :443</div>
+      <div class="svc-desc">Reverse proxy, TLS termination, rate limiting</div>
+      <span class="svc-tag" style="background:rgba(96,165,250,0.12);color:var(--blue);">EDGE</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--teal);">gateway</div>
+      <div class="svc-port">:3000</div>
+      <div class="svc-desc">API Gateway Fastify — authn, routing, WS</div>
+      <span class="svc-tag" style="background:rgba(45,212,191,0.12);color:var(--teal);">GATEWAY</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--green);">auth-service</div>
+      <div class="svc-port">:3001 (interno)</div>
+      <div class="svc-desc">JWT, refresh token, utenti, MFA</div>
+      <span class="svc-tag" style="background:rgba(77,222,128,0.12);color:var(--green);">SERVICE</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--green);">scheduling-service</div>
+      <div class="svc-port">:3002 (interno)</div>
+      <div class="svc-desc">Piani cura, turni, appuntamenti</div>
+      <span class="svc-tag" style="background:rgba(77,222,128,0.12);color:var(--green);">SERVICE</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--green);">presenze-service</div>
+      <div class="svc-port">:3003 (interno)</div>
+      <div class="svc-desc">Check-in/out, HMAC verify, geofence</div>
+      <span class="svc-tag" style="background:rgba(77,222,128,0.12);color:var(--green);">SERVICE</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--green);">cartella-service</div>
+      <div class="svc-port">:3004 (interno)</div>
+      <div class="svc-desc">Cartella sanitaria, note, allegati</div>
+      <span class="svc-tag" style="background:rgba(77,222,128,0.12);color:var(--green);">SERVICE</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--green);">hr-service</div>
+      <div class="svc-port">:3005 (interno)</div>
+      <div class="svc-desc">Formazione, documenti qualità</div>
+      <span class="svc-tag" style="background:rgba(77,222,128,0.12);color:var(--green);">SERVICE</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--purple);">notify-service</div>
+      <div class="svc-port">:3006 (interno)</div>
+      <div class="svc-desc">FCM/APNS push, email via SMTP</div>
+      <span class="svc-tag" style="background:rgba(192,132,252,0.12);color:var(--purple);">WORKER</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--red);">wb-service</div>
+      <div class="svc-port">:3007 (rete isolata)</div>
+      <div class="svc-desc">Whistleblowing — DB e rete separati</div>
+      <span class="svc-tag" style="background:rgba(248,113,113,0.12);color:var(--red);">ISOLATO</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--amber);">postgres</div>
+      <div class="svc-port">:5432 (interno)</div>
+      <div class="svc-desc">DB principale — tutti i servizi</div>
+      <span class="svc-tag" style="background:rgba(251,191,36,0.12);color:var(--amber);">DATA</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--amber);">postgres-wb</div>
+      <div class="svc-port">:5433 (rete wb)</div>
+      <div class="svc-desc">DB whistleblowing — rete isolata</div>
+      <span class="svc-tag" style="background:rgba(251,191,36,0.12);color:var(--amber);">DATA ISOLATO</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--orange);">redis</div>
+      <div class="svc-port">:6379 (interno)</div>
+      <div class="svc-desc">Cache, sessioni, BullMQ queue</div>
+      <span class="svc-tag" style="background:rgba(251,146,60,0.12);color:var(--orange);">CACHE</span>
+    </div>
+    <div class="svc-tile">
+      <div class="svc-name" style="color:var(--blue);">minio</div>
+      <div class="svc-port">:9000 / :9001</div>
+      <div class="svc-desc">Object storage per allegati clinici</div>
+      <span class="svc-tag" style="background:rgba(96,165,250,0.12);color:var(--blue);">STORAGE</span>
+    </div>
+  </div>
+
+  <div class="sec">// Topologia di rete Docker</div>
+
+  <div class="network-map">
+    <div class="net-zone" style="border-color:#1d4ed8;">
+      <div class="net-zone-label" style="color:var(--blue);">Internet (traffico pubblico)</div>
+      <div class="net-nodes">
+        <div class="net-node" style="border-color:#1d4ed8;color:var(--blue);">Client Web (HTTPS)</div>
+        <div class="net-node" style="border-color:#1d4ed8;color:var(--blue);">App Mobile (HTTPS)</div>
+      </div>
+    </div>
+    <div class="net-arrow">↓ TLS 1.3</div>
+    <div class="net-zone" style="border-color:#0f766e;">
+      <div class="net-zone-label" style="color:var(--teal);">DMZ — rete: webinclusive_public</div>
+      <div class="net-nodes">
+        <div class="net-node" style="border-color:#0f766e;color:var(--teal);">nginx :443</div>
+      </div>
+    </div>
+    <div class="net-arrow">↓ HTTP/1.1 proxy_pass</div>
+    <div class="net-zone" style="border-color:#166534;">
+      <div class="net-zone-label" style="color:var(--green);">rete interna: webinclusive_internal</div>
+      <div class="net-nodes">
+        <div class="net-node" style="border-color:#166534;color:var(--green);">gateway :3000</div>
+        <div class="net-node" style="border-color:#166534;color:var(--green);">auth-service :3001</div>
+        <div class="net-node" style="border-color:#166534;color:var(--green);">scheduling :3002</div>
+        <div class="net-node" style="border-color:#166534;color:var(--green);">presenze :3003</div>
+        <div class="net-node" style="border-color:#166534;color:var(--green);">cartella :3004</div>
+        <div class="net-node" style="border-color:#166534;color:var(--green);">hr :3005</div>
+        <div class="net-node" style="border-color:#166534;color:var(--green);">notify :3006</div>
+        <div class="net-node" style="border-color:#78350f;color:var(--amber);">postgres :5432</div>
+        <div class="net-node" style="border-color:#c2410c;color:var(--orange);">redis :6379</div>
+        <div class="net-node" style="border-color:#1d4ed8;color:var(--blue);">minio :9000</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;">
+      <div>
+        <div class="net-arrow" style="text-align:left;padding-left:20px;">↓ rete isolata wb</div>
+        <div class="net-zone" style="border-color:#991b1b;">
+          <div class="net-zone-label" style="color:var(--red);">rete: webinclusive_wb (ISOLATA)</div>
+          <div class="net-nodes">
+            <div class="net-node" style="border-color:#991b1b;color:var(--red);">wb-service :3007</div>
+            <div class="net-node" style="border-color:#991b1b;color:var(--red);">postgres-wb :5433</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:0.72rem;color:var(--text3);padding:16px;background:rgba(255,255,255,0.02);border-radius:6px;border:1px solid var(--border);">
+        La rete wb non ha route verso webinclusive_internal.<br>
+        Il gateway può inoltrarvi richieste solo attraverso un singolo endpoint esposto.
+        Nessun altro servizio può raggiungere wb-service.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- DOCKER COMPOSE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-compose">
+  <div class="sec">// docker-compose.yml — produzione</div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">docker-compose.yml</span>
+      <button class="copy-btn" onclick="copyPre(this)">COPIA</button>
+    </div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;"><span class="y-cmt">###############################################################</span>
+<span class="y-cmt"># WEB.INCLUSIVE — Docker Compose (produzione)</span>
+<span class="y-cmt">###############################################################</span>
+<span class="y-key">version</span>: <span class="y-str">"3.9"</span>
+
+<span class="y-sec">x-common-env</span>: <span class="y-anchor">&amp;common-env</span>
+  NODE_ENV:      <span class="y-str">production</span>
+  DATABASE_URL:  <span class="y-str">${DATABASE_URL}</span>
+  REDIS_URL:     <span class="y-str">${REDIS_URL}</span>
+  JWT_ACCESS_SECRET: <span class="y-str">${JWT_ACCESS_SECRET}</span>
+
+<span class="y-sec">x-svc-defaults</span>: <span class="y-anchor">&amp;svc-defaults</span>
+  <span class="y-key">restart</span>:  <span class="y-str">unless-stopped</span>
+  <span class="y-key">networks</span>:
+    - <span class="y-str">internal</span>
+  <span class="y-key">logging</span>:
+    <span class="y-key">driver</span>: <span class="y-str">json-file</span>
+    <span class="y-key">options</span>:
+      <span class="y-key">max-size</span>: <span class="y-str">"50m"</span>
+      <span class="y-key">max-file</span>: <span class="y-str">"5"</span>
+
+<span class="y-key">services</span>:
+
+<span class="y-cmt">  # ── NGINX Edge ───────────────────────────────────────────</span>
+  <span class="y-svc">nginx</span>:
+    <span class="y-key">image</span>: <span class="y-str">nginx:1.25-alpine</span>
+    <span class="y-key">restart</span>: <span class="y-str">unless-stopped</span>
+    <span class="y-key">ports</span>:
+      - <span class="y-str">"80:80"</span>
+      - <span class="y-str">"443:443"</span>
+    <span class="y-key">volumes</span>:
+      - <span class="y-str">./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro</span>
+      - <span class="y-str">./infra/nginx/certs:/etc/nginx/certs:ro</span>
+      - <span class="y-str">nginx_logs:/var/log/nginx</span>
+    <span class="y-key">depends_on</span>:
+      - <span class="y-str">gateway</span>
+    <span class="y-key">networks</span>:
+      - <span class="y-str">public</span>
+      - <span class="y-str">internal</span>
+
+<span class="y-cmt">  # ── API Gateway ──────────────────────────────────────────</span>
+  <span class="y-svc">gateway</span>:
+    <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*svc-defaults</span>
+    <span class="y-key">build</span>:
+      <span class="y-key">context</span>: <span class="y-str">./services/gateway</span>
+      <span class="y-key">dockerfile</span>: <span class="y-str">Dockerfile</span>
+    <span class="y-key">environment</span>:
+      <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*common-env</span>
+      PORT: <span class="y-num">3000</span>
+      ALLOWED_ORIGINS: <span class="y-str">${ALLOWED_ORIGINS}</span>
+    <span class="y-key">depends_on</span>:
+      postgres: { <span class="y-key">condition</span>: <span class="y-str">service_healthy</span> }
+      redis:    { <span class="y-key">condition</span>: <span class="y-str">service_healthy</span> }
+    <span class="y-key">healthcheck</span>:
+      <span class="y-key">test</span>: [<span class="y-str">"CMD"</span>, <span class="y-str">"wget"</span>, <span class="y-str">"-qO-"</span>, <span class="y-str">"http://localhost:3000/health"</span>]
+      <span class="y-key">interval</span>: <span class="y-str">30s</span>
+      <span class="y-key">timeout</span>:  <span class="y-str">5s</span>
+      <span class="y-key">retries</span>:  <span class="y-num">3</span>
+
+<span class="y-cmt">  # ── Microservizi applicativi ──────────────────────────────</span>
+  <span class="y-svc">auth-service</span>:
+    <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*svc-defaults</span>
+    <span class="y-key">build</span>: <span class="y-str">./services/auth-service</span>
+    <span class="y-key">environment</span>:
+      <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*common-env</span>
+      PORT:           <span class="y-num">3001</span>
+      BCRYPT_ROUNDS:  <span class="y-str">${BCRYPT_ROUNDS:-12}</span>
+      ENCRYPTION_KEY: <span class="y-str">${ENCRYPTION_KEY}</span>
+
+  <span class="y-svc">scheduling-service</span>:
+    <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*svc-defaults</span>
+    <span class="y-key">build</span>: <span class="y-str">./services/scheduling-service</span>
+    <span class="y-key">environment</span>:
+      <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*common-env</span>
+      PORT: <span class="y-num">3002</span>
+
+  <span class="y-svc">presenze-service</span>:
+    <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*svc-defaults</span>
+    <span class="y-key">build</span>: <span class="y-str">./services/presenze-service</span>
+    <span class="y-key">environment</span>:
+      <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*common-env</span>
+      PORT:                   <span class="y-num">3003</span>
+      GEOFENCE_RADIUS_METERS: <span class="y-str">${GEOFENCE_RADIUS_METERS:-200}</span>
+      OFFLINE_SYNC_MAX_HOURS: <span class="y-str">${OFFLINE_SYNC_MAX_HOURS:-2}</span>
+
+  <span class="y-svc">cartella-service</span>:
+    <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*svc-defaults</span>
+    <span class="y-key">build</span>: <span class="y-str">./services/cartella-service</span>
+    <span class="y-key">environment</span>:
+      <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*common-env</span>
+      PORT:            <span class="y-num">3004</span>
+      ENCRYPTION_KEY:  <span class="y-str">${ENCRYPTION_KEY}</span>
+      MINIO_ENDPOINT:  <span class="y-str">minio:9000</span>
+      MINIO_ACCESS_KEY:<span class="y-str">${MINIO_ACCESS_KEY}</span>
+      MINIO_SECRET_KEY:<span class="y-str">${MINIO_SECRET_KEY}</span>
+
+  <span class="y-svc">hr-service</span>:
+    <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*svc-defaults</span>
+    <span class="y-key">build</span>: <span class="y-str">./services/hr-service</span>
+    <span class="y-key">environment</span>:
+      <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*common-env</span>
+      PORT: <span class="y-num">3005</span>
+
+  <span class="y-svc">notify-service</span>:
+    <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*svc-defaults</span>
+    <span class="y-key">build</span>: <span class="y-str">./services/notify-service</span>
+    <span class="y-key">environment</span>:
+      <span class="y-key">&lt;&lt;</span>: <span class="y-anchor">*common-env</span>
+      PORT:           <span class="y-num">3006</span>
+      FCM_SERVER_KEY: <span class="y-str">${FCM_SERVER_KEY}</span>
+      APNS_KEY_ID:    <span class="y-str">${APNS_KEY_ID}</span>
+      SMTP_HOST:      <span class="y-str">${SMTP_HOST}</span>
+      SMTP_PORT:      <span class="y-str">${SMTP_PORT:-587}</span>
+      SMTP_USER:      <span class="y-str">${SMTP_USER}</span>
+      SMTP_PASS:      <span class="y-str">${SMTP_PASS}</span>
+
+<span class="y-cmt">  # ── Whistleblowing (ISOLATO) ─────────────────────────────</span>
+  <span class="y-svc">wb-service</span>:
+    <span class="y-key">restart</span>: <span class="y-str">unless-stopped</span>
+    <span class="y-key">build</span>: <span class="y-str">./services/wb-service</span>
+    <span class="y-key">environment</span>:
+      NODE_ENV:       <span class="y-str">production</span>
+      PORT:           <span class="y-num">3007</span>
+      WB_DATABASE_URL:<span class="y-str">${WB_DATABASE_URL}</span>
+      ENCRYPTION_KEY: <span class="y-str">${WB_ENCRYPTION_KEY}</span>
+      <span class="y-cmt"># NB: nessun JWT_ACCESS_SECRET condiviso</span>
+    <span class="y-key">networks</span>:
+      - <span class="y-str">wb_network</span>    <span class="y-cmt"># SOLO rete wb, non internal</span>
+    <span class="y-key">depends_on</span>:
+      postgres-wb: { <span class="y-key">condition</span>: <span class="y-str">service_healthy</span> }
+
+<span class="y-cmt">  # ── Data Layer ────────────────────────────────────────────</span>
+  <span class="y-svc">postgres</span>:
+    <span class="y-key">image</span>: <span class="y-str">postgres:15-alpine</span>
+    <span class="y-key">restart</span>: <span class="y-str">unless-stopped</span>
+    <span class="y-key">environment</span>:
+      POSTGRES_DB:       <span class="y-str">webinclusive</span>
+      POSTGRES_USER:     <span class="y-str">${POSTGRES_USER}</span>
+      POSTGRES_PASSWORD: <span class="y-str">${POSTGRES_PASSWORD}</span>
+    <span class="y-key">volumes</span>:
+      - <span class="y-str">postgres_data:/var/lib/postgresql/data</span>
+      - <span class="y-str">./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro</span>
+    <span class="y-key">networks</span>:
+      - <span class="y-str">internal</span>
+    <span class="y-key">healthcheck</span>:
+      <span class="y-key">test</span>: [<span class="y-str">"CMD-SHELL"</span>, <span class="y-str">"pg_isready -U ${POSTGRES_USER} -d webinclusive"</span>]
+      <span class="y-key">interval</span>: <span class="y-str">10s</span>
+      <span class="y-key">timeout</span>:  <span class="y-str">5s</span>
+      <span class="y-key">retries</span>:  <span class="y-num">5</span>
+    <span class="y-key">shm_size</span>: <span class="y-str">'256mb'</span>
+
+  <span class="y-svc">postgres-wb</span>:
+    <span class="y-key">image</span>: <span class="y-str">postgres:15-alpine</span>
+    <span class="y-key">restart</span>: <span class="y-str">unless-stopped</span>
+    <span class="y-key">environment</span>:
+      POSTGRES_DB:       <span class="y-str">wb_db</span>
+      POSTGRES_USER:     <span class="y-str">${WB_POSTGRES_USER}</span>
+      POSTGRES_PASSWORD: <span class="y-str">${WB_POSTGRES_PASSWORD}</span>
+    <span class="y-key">volumes</span>:
+      - <span class="y-str">postgres_wb_data:/var/lib/postgresql/data</span>
+    <span class="y-key">networks</span>:
+      - <span class="y-str">wb_network</span>
+    <span class="y-key">healthcheck</span>:
+      <span class="y-key">test</span>: [<span class="y-str">"CMD-SHELL"</span>, <span class="y-str">"pg_isready -U ${WB_POSTGRES_USER}"</span>]
+      <span class="y-key">interval</span>: <span class="y-str">10s</span>
+      <span class="y-key">timeout</span>:  <span class="y-str">5s</span>
+      <span class="y-key">retries</span>:  <span class="y-num">5</span>
+
+  <span class="y-svc">redis</span>:
+    <span class="y-key">image</span>: <span class="y-str">redis:7-alpine</span>
+    <span class="y-key">restart</span>: <span class="y-str">unless-stopped</span>
+    <span class="y-key">command</span>: <span class="y-str">redis-server /etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}</span>
+    <span class="y-key">volumes</span>:
+      - <span class="y-str">redis_data:/data</span>
+      - <span class="y-str">./infra/redis/redis.conf:/etc/redis/redis.conf:ro</span>
+    <span class="y-key">networks</span>:
+      - <span class="y-str">internal</span>
+    <span class="y-key">healthcheck</span>:
+      <span class="y-key">test</span>: [<span class="y-str">"CMD"</span>, <span class="y-str">"redis-cli"</span>, <span class="y-str">"--no-auth-warning"</span>, <span class="y-str">"-a"</span>, <span class="y-str">"${REDIS_PASSWORD}"</span>, <span class="y-str">"ping"</span>]
+      <span class="y-key">interval</span>: <span class="y-str">10s</span>
+      <span class="y-key">timeout</span>:  <span class="y-str">3s</span>
+      <span class="y-key">retries</span>:  <span class="y-num">3</span>
+
+  <span class="y-svc">minio</span>:
+    <span class="y-key">image</span>: <span class="y-str">minio/minio:latest</span>
+    <span class="y-key">restart</span>: <span class="y-str">unless-stopped</span>
+    <span class="y-key">command</span>: <span class="y-str">server /data --console-address ":9001"</span>
+    <span class="y-key">environment</span>:
+      MINIO_ROOT_USER:     <span class="y-str">${MINIO_ACCESS_KEY}</span>
+      MINIO_ROOT_PASSWORD: <span class="y-str">${MINIO_SECRET_KEY}</span>
+    <span class="y-key">volumes</span>:
+      - <span class="y-str">minio_data:/data</span>
+    <span class="y-key">networks</span>:
+      - <span class="y-str">internal</span>
+    <span class="y-key">healthcheck</span>:
+      <span class="y-key">test</span>: [<span class="y-str">"CMD"</span>, <span class="y-str">"mc"</span>, <span class="y-str">"ready"</span>, <span class="y-str">"local"</span>]
+      <span class="y-key">interval</span>: <span class="y-str">30s</span>
+
+<span class="y-cmt">  # ── Monitoring ────────────────────────────────────────────</span>
+  <span class="y-svc">prometheus</span>:
+    <span class="y-key">image</span>: <span class="y-str">prom/prometheus:latest</span>
+    <span class="y-key">restart</span>: <span class="y-str">unless-stopped</span>
+    <span class="y-key">volumes</span>:
+      - <span class="y-str">./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro</span>
+      - <span class="y-str">prometheus_data:/prometheus</span>
+    <span class="y-key">networks</span>:
+      - <span class="y-str">internal</span>
+
+  <span class="y-svc">grafana</span>:
+    <span class="y-key">image</span>: <span class="y-str">grafana/grafana:latest</span>
+    <span class="y-key">restart</span>: <span class="y-str">unless-stopped</span>
+    <span class="y-key">environment</span>:
+      GF_SECURITY_ADMIN_PASSWORD: <span class="y-str">${GRAFANA_PASSWORD}</span>
+      GF_SERVER_ROOT_URL:         <span class="y-str">https://monitoring.webinclusive.it</span>
+    <span class="y-key">volumes</span>:
+      - <span class="y-str">grafana_data:/var/lib/grafana</span>
+      - <span class="y-str">./infra/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro</span>
+    <span class="y-key">networks</span>:
+      - <span class="y-str">internal</span>
+
+<span class="y-cmt">###############################################################</span>
+<span class="y-key">networks</span>:
+  <span class="y-svc">public</span>:
+    <span class="y-key">driver</span>: <span class="y-str">bridge</span>
+  <span class="y-svc">internal</span>:
+    <span class="y-key">driver</span>: <span class="y-str">bridge</span>
+    <span class="y-key">internal</span>: <span class="y-bool">true</span>   <span class="y-cmt"># non raggiungibile dall'esterno</span>
+  <span class="y-svc">wb_network</span>:
+    <span class="y-key">driver</span>: <span class="y-str">bridge</span>
+    <span class="y-key">internal</span>: <span class="y-bool">true</span>   <span class="y-cmt"># isolata anche da internal</span>
+
+<span class="y-key">volumes</span>:
+  postgres_data:
+  postgres_wb_data:
+  redis_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+  nginx_logs:</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">services/gateway/Dockerfile — build multi-stage</span>
+      <button class="copy-btn" onclick="copyPre(this)">COPIA</button>
+    </div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;"><span class="y-cmt"># Stage 1: Build</span>
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --frozen-lockfile
+COPY . .
+RUN npm run build
+
+<span class="y-cmt"># Stage 2: Runtime (immagine minimale)</span>
+FROM node:20-alpine AS runtime
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+WORKDIR /app
+
+<span class="y-cmt"># Solo dipendenze produzione</span>
+COPY package*.json ./
+RUN npm ci --only=production --frozen-lockfile && npm cache clean --force
+
+COPY --from=builder /app/dist ./dist
+
+<span class="y-cmt"># Non girare come root</span>
+USER appuser
+
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+  CMD wget -qO- http://localhost:3000/health || exit 1
+
+CMD ["node", "dist/index.js"]</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- NGINX -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-nginx">
+  <div class="sec">// NGINX — reverse proxy + TLS + security headers</div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">infra/nginx/nginx.conf</span>
+      <button class="copy-btn" onclick="copyPre(this)">COPIA</button>
+    </div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;"><span class="n-cmt"># WEB.INCLUSIVE — NGINX Configuration</span>
+<span class="n-cmt"># TLS 1.3, HSTS, rate limiting, WebSocket proxy</span>
+
+<span class="n-dir">worker_processes</span>  auto;
+<span class="n-dir">worker_rlimit_nofile</span> 65535;
+
+<span class="n-blk">events</span> {
+  <span class="n-dir">worker_connections</span> 4096;
+  <span class="n-dir">multi_accept</span>       on;
+  <span class="n-dir">use</span>                epoll;
+}
+
+<span class="n-blk">http</span> {
+  <span class="n-dir">include</span>       /etc/nginx/mime.types;
+  <span class="n-dir">default_type</span>  application/octet-stream;
+
+  <span class="n-cmt"># ── Logging strutturato JSON ──────────────────────────────</span>
+  <span class="n-dir">log_format</span> json_combined escape=json
+    <span class="n-val">'{'</span>
+    <span class="n-val">'"time":"$time_iso8601",'</span>
+    <span class="n-val">'"remote_addr":"$remote_addr",'</span>
+    <span class="n-val">'"method":"$request_method",'</span>
+    <span class="n-val">'"uri":"$uri",'</span>
+    <span class="n-val">'"status":$status,'</span>
+    <span class="n-val">'"bytes_sent":$bytes_sent,'</span>
+    <span class="n-val">'"duration":$request_time,'</span>
+    <span class="n-val">'"user_agent":"$http_user_agent"'</span>
+    <span class="n-val">'}'</span>;
+
+  <span class="n-dir">access_log</span> /var/log/nginx/access.log json_combined;
+  <span class="n-dir">error_log</span>  /var/log/nginx/error.log warn;
+
+  <span class="n-cmt"># ── Performance ──────────────────────────────────────────</span>
+  <span class="n-dir">sendfile</span>           on;
+  <span class="n-dir">tcp_nopush</span>         on;
+  <span class="n-dir">tcp_nodelay</span>        on;
+  <span class="n-dir">keepalive_timeout</span>  65;
+  <span class="n-dir">gzip</span>               on;
+  <span class="n-dir">gzip_types</span>         text/plain application/json application/javascript;
+
+  <span class="n-cmt"># ── Rate limiting zones ───────────────────────────────────</span>
+  <span class="n-dir">limit_req_zone</span>  $binary_remote_addr zone=api_zone:10m    rate=60r/m;
+  <span class="n-dir">limit_req_zone</span>  $binary_remote_addr zone=auth_zone:10m   rate=10r/m;
+  <span class="n-dir">limit_req_zone</span>  $binary_remote_addr zone=mobile_zone:20m rate=120r/m;
+  <span class="n-dir">limit_conn_zone</span> $binary_remote_addr zone=conn_zone:10m;
+
+  <span class="n-cmt"># ── Upstream API Gateway ─────────────────────────────────</span>
+  <span class="n-blk">upstream</span> gateway {
+    <span class="n-dir">server</span> gateway:3000;
+    <span class="n-dir">keepalive</span> 32;
+  }
+
+  <span class="n-cmt"># ── Redirect HTTP → HTTPS ────────────────────────────────</span>
+  <span class="n-blk">server</span> {
+    <span class="n-dir">listen</span>       80;
+    <span class="n-dir">server_name</span>  _;
+    <span class="n-dir">return</span>       301 https://$host$request_uri;
+  }
+
+  <span class="n-cmt"># ── HTTPS principale ─────────────────────────────────────</span>
+  <span class="n-blk">server</span> {
+    <span class="n-dir">listen</span>               443 ssl;
+    <span class="n-dir">http2</span>                on;
+    <span class="n-dir">server_name</span>          app.webinclusive.it;
+
+    <span class="n-cmt"># TLS</span>
+    <span class="n-dir">ssl_certificate</span>      /etc/nginx/certs/fullchain.pem;
+    <span class="n-dir">ssl_certificate_key</span>  /etc/nginx/certs/privkey.pem;
+    <span class="n-dir">ssl_protocols</span>        TLSv1.2 TLSv1.3;
+    <span class="n-dir">ssl_prefer_server_ciphers</span> on;
+    <span class="n-dir">ssl_session_cache</span>    shared:SSL:50m;
+    <span class="n-dir">ssl_session_timeout</span>  1d;
+    <span class="n-dir">ssl_session_tickets</span>  off;
+
+    <span class="n-cmt"># Security headers</span>
+    <span class="n-dir">add_header</span> Strict-Transport-Security <span class="n-val">"max-age=63072000; includeSubDomains; preload"</span> always;
+    <span class="n-dir">add_header</span> X-Frame-Options           DENY always;
+    <span class="n-dir">add_header</span> X-Content-Type-Options    nosniff always;
+    <span class="n-dir">add_header</span> X-XSS-Protection          <span class="n-val">"1; mode=block"</span> always;
+    <span class="n-dir">add_header</span> Referrer-Policy           <span class="n-val">"no-referrer-when-downgrade"</span> always;
+    <span class="n-dir">add_header</span> Content-Security-Policy   <span class="n-val">"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"</span> always;
+    <span class="n-dir">add_header</span> Permissions-Policy        <span class="n-val">"geolocation=(), microphone=()"</span> always;
+
+    <span class="n-cmt"># Nascondi versione nginx</span>
+    <span class="n-dir">server_tokens</span> off;
+
+    <span class="n-cmt"># ── Auth endpoints (rate limit stretto) ──────────────────</span>
+    <span class="n-blk">location</span> ~ ^/api/v1/auth/(login|refresh) {
+      <span class="n-dir">limit_req</span>  zone=auth_zone burst=5 nodelay;
+      <span class="n-dir">limit_conn</span> conn_zone 10;
+      <span class="n-dir">proxy_pass</span> http://gateway;
+      <span class="n-dir">include</span>    /etc/nginx/proxy_params.conf;
+    }
+
+    <span class="n-cmt"># ── WebSocket Centrale Operativa ─────────────────────────</span>
+    <span class="n-blk">location</span> /ws/ {
+      <span class="n-dir">proxy_pass</span>          http://gateway;
+      <span class="n-dir">proxy_http_version</span>  1.1;
+      <span class="n-dir">proxy_set_header</span>    Upgrade    $http_upgrade;
+      <span class="n-dir">proxy_set_header</span>    Connection <span class="n-val">"upgrade"</span>;
+      <span class="n-dir">proxy_read_timeout</span>  3600s;
+      <span class="n-dir">proxy_send_timeout</span>  3600s;
+    }
+
+    <span class="n-cmt"># ── API generali ──────────────────────────────────────────</span>
+    <span class="n-blk">location</span> /api/ {
+      <span class="n-dir">limit_req</span>  zone=api_zone burst=20 nodelay;
+      <span class="n-dir">limit_conn</span> conn_zone 50;
+
+      <span class="n-dir">proxy_pass</span>            http://gateway;
+      <span class="n-dir">proxy_read_timeout</span>    30s;
+      <span class="n-dir">proxy_connect_timeout</span> 10s;
+      <span class="n-dir">include</span>               /etc/nginx/proxy_params.conf;
+
+      <span class="n-cmt"># Body size max 10MB (upload allegati)</span>
+      <span class="n-dir">client_max_body_size</span>  10m;
+    }
+
+    <span class="n-cmt"># ── App React (SPA) ──────────────────────────────────────</span>
+    <span class="n-blk">location</span> / {
+      <span class="n-dir">root</span>       /usr/share/nginx/html;
+      <span class="n-dir">try_files</span>  $uri $uri/ /index.html;
+      <span class="n-dir">expires</span>    1h;
+    }
+  }
+}</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- POSTGRESQL -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-postgres">
+  <div class="sec">// PostgreSQL — configurazione, init e hardening</div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">infra/postgres/init.sql</span>
+        <button class="copy-btn" onclick="copyPre(this)">COPIA</button>
+      </div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;font-size:0.68rem;"><span class="y-cmt">-- Utenti dedicati per ogni microservizio</span>
+<span class="y-cmt">-- Principio del minimo privilegio</span>
+
+CREATE USER auth_user     WITH PASSWORD :'AUTH_DB_PASS';
+CREATE USER sched_user    WITH PASSWORD :'SCHED_DB_PASS';
+CREATE USER pres_user     WITH PASSWORD :'PRES_DB_PASS';
+CREATE USER cartella_user WITH PASSWORD :'CART_DB_PASS';
+CREATE USER hr_user       WITH PASSWORD :'HR_DB_PASS';
+CREATE USER audit_user    WITH PASSWORD :'AUDIT_DB_PASS';
+
+<span class="y-cmt">-- Schemi separati per ogni dominio</span>
+CREATE SCHEMA auth;
+CREATE SCHEMA scheduling;
+CREATE SCHEMA presenze;
+CREATE SCHEMA cartella;
+CREATE SCHEMA hr;
+CREATE SCHEMA audit;
+
+<span class="y-cmt">-- Revoca accessi default</span>
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+
+<span class="y-cmt">-- Grant schemi ai rispettivi utenti</span>
+GRANT USAGE, CREATE ON SCHEMA auth       TO auth_user;
+GRANT USAGE, CREATE ON SCHEMA scheduling TO sched_user;
+GRANT USAGE, CREATE ON SCHEMA presenze   TO pres_user;
+GRANT USAGE, CREATE ON SCHEMA cartella   TO cartella_user;
+GRANT USAGE, CREATE ON SCHEMA hr         TO hr_user;
+
+<span class="y-cmt">-- audit_user: solo INSERT (append-only)</span>
+GRANT USAGE  ON SCHEMA audit   TO audit_user;
+GRANT INSERT ON ALL TABLES IN SCHEMA audit TO audit_user;
+
+<span class="y-cmt">-- Estensioni necessarie</span>
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements"; <span class="y-cmt">-- monitoring query</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">postgresql.conf — tuning produzione</span><button class="copy-btn" onclick="copyPre(this)">COPIA</button></div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;font-size:0.68rem;"><span class="y-cmt"># Memoria (per server con 8GB RAM)</span>
+shared_buffers          = 2GB
+effective_cache_size    = 6GB
+work_mem                = 64MB
+maintenance_work_mem    = 512MB
+
+<span class="y-cmt"># Write-Ahead Log</span>
+wal_level               = replica
+max_wal_size            = 1GB
+min_wal_size            = 80MB
+checkpoint_completion_target = 0.9
+
+<span class="y-cmt"># Connessioni</span>
+max_connections         = 200
+<span class="y-cmt"># Usare PgBouncer per pooling in produzione</span>
+
+<span class="y-cmt"># Query planner</span>
+random_page_cost        = 1.1   <span class="y-cmt"># SSD</span>
+effective_io_concurrency = 200
+
+<span class="y-cmt"># Logging</span>
+log_min_duration_statement = 1000   <span class="y-cmt"># log query > 1s</span>
+log_checkpoints            = on
+log_connections            = on
+log_disconnections         = on
+log_lock_waits             = on
+
+<span class="y-cmt"># Sicurezza</span>
+ssl                        = on
+ssl_cert_file              = 'server.crt'
+ssl_key_file               = 'server.key'</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="card-title">Strategia indici — query frequenti ottimizzate</span></div>
+    <div class="card-body" style="padding:0;">
+<pre class="code" style="border:none;border-radius:0 0 10px 10px;font-size:0.68rem;"><span class="y-cmt">-- Appuntamenti: query frequentissima → operatore + data</span>
+CREATE INDEX CONCURRENTLY idx_appointments_operator_day
+  ON scheduling.appointments(operator_id, DATE(scheduled_start));
+
+<span class="y-cmt">-- Presenze: report mensile per operatore</span>
+CREATE INDEX CONCURRENTLY idx_attendance_operator_month
+  ON presenze.attendance_records(operator_id, DATE_TRUNC('month', check_in_at));
+
+<span class="y-cmt">-- Beneficiari: ricerca per codice fiscale (cifratura preserving order)</span>
+CREATE INDEX CONCURRENTLY idx_beneficiaries_fiscal
+  ON auth.beneficiaries(fiscal_code);
+
+<span class="y-cmt">-- Audit log: ricerca per entità (immutabile, nessun UPDATE/DELETE)</span>
+CREATE INDEX CONCURRENTLY idx_audit_entity_time
+  ON audit.audit_logs(entity_type, entity_id, created_at DESC);
+
+<span class="y-cmt">-- Messaggi: inbox utente non letti</span>
+CREATE INDEX CONCURRENTLY idx_messages_inbox
+  ON scheduling.messages(receiver_user_id, is_read, sent_at DESC)
+  WHERE is_read = FALSE;
+
+<span class="y-cmt">-- Turni: per zona territoriale + data</span>
+CREATE INDEX CONCURRENTLY idx_shifts_zone_date
+  ON scheduling.shifts(territory_zone, shift_date);</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CI/CD -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-cicd">
+  <div class="sec">// CI/CD — GitHub Actions pipeline</div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">.github/workflows/deploy.yml</span>
+      <button class="copy-btn" onclick="copyPre(this)">COPIA</button>
+    </div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;"><span class="y-key">name</span>: <span class="y-val">WEB.INCLUSIVE Deploy</span>
+
+<span class="y-key">on</span>:
+  <span class="y-key">push</span>:
+    <span class="y-key">branches</span>: [<span class="y-str">main</span>]
+  <span class="y-key">pull_request</span>:
+    <span class="y-key">branches</span>: [<span class="y-str">main</span>]
+
+<span class="y-key">env</span>:
+  REGISTRY:   <span class="y-str">ghcr.io</span>
+  IMAGE_NAME: <span class="y-str">${{ github.repository }}</span>
+
+<span class="y-key">jobs</span>:
+
+<span class="y-cmt">  # ── 1. Test e lint ────────────────────────────────────────</span>
+  <span class="y-svc">test</span>:
+    <span class="y-key">runs-on</span>: <span class="y-str">ubuntu-latest</span>
+    <span class="y-key">services</span>:
+      <span class="y-key">postgres</span>:
+        <span class="y-key">image</span>: <span class="y-str">postgres:15-alpine</span>
+        <span class="y-key">env</span>:
+          POSTGRES_PASSWORD: <span class="y-str">test_password</span>
+          POSTGRES_DB:       <span class="y-str">webinclusive_test</span>
+        <span class="y-key">options</span>: <span class="y-str">>-
+          --health-cmd pg_isready
+          --health-interval 10s</span>
+      <span class="y-key">redis</span>:
+        <span class="y-key">image</span>: <span class="y-str">redis:7-alpine</span>
+        <span class="y-key">options</span>: <span class="y-str">>-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s</span>
+
+    <span class="y-key">steps</span>:
+      - <span class="y-key">uses</span>: <span class="y-str">actions/checkout@v4</span>
+
+      - <span class="y-key">name</span>: <span class="y-val">Setup Node.js 20</span>
+        <span class="y-key">uses</span>: <span class="y-str">actions/setup-node@v4</span>
+        <span class="y-key">with</span>:
+          <span class="y-key">node-version</span>: <span class="y-str">'20'</span>
+          <span class="y-key">cache</span>: <span class="y-str">'npm'</span>
+
+      - <span class="y-key">name</span>: <span class="y-val">Install dependencies</span>
+        <span class="y-key">run</span>: <span class="y-val">npm ci --workspaces</span>
+
+      - <span class="y-key">name</span>: <span class="y-val">Lint</span>
+        <span class="y-key">run</span>: <span class="y-val">npm run lint --workspaces</span>
+
+      - <span class="y-key">name</span>: <span class="y-val">Type check</span>
+        <span class="y-key">run</span>: <span class="y-val">npm run typecheck --workspaces</span>
+
+      - <span class="y-key">name</span>: <span class="y-val">Unit + integration tests</span>
+        <span class="y-key">run</span>: <span class="y-val">npm run test:ci --workspaces</span>
+        <span class="y-key">env</span>:
+          DATABASE_URL: <span class="y-str">postgresql://postgres:test_password@localhost:5432/webinclusive_test</span>
+          REDIS_URL:    <span class="y-str">redis://localhost:6379</span>
+          JWT_ACCESS_SECRET: <span class="y-str">test-secret-not-for-prod</span>
+
+      - <span class="y-key">name</span>: <span class="y-val">Upload coverage</span>
+        <span class="y-key">uses</span>: <span class="y-str">codecov/codecov-action@v4</span>
+
+<span class="y-cmt">  # ── 2. Security scan ──────────────────────────────────────</span>
+  <span class="y-svc">security-scan</span>:
+    <span class="y-key">runs-on</span>: <span class="y-str">ubuntu-latest</span>
+    <span class="y-key">needs</span>: <span class="y-str">test</span>
+    <span class="y-key">steps</span>:
+      - <span class="y-key">uses</span>: <span class="y-str">actions/checkout@v4</span>
+
+      - <span class="y-key">name</span>: <span class="y-val">SAST — Semgrep</span>
+        <span class="y-key">uses</span>: <span class="y-str">semgrep/semgrep-action@v1</span>
+        <span class="y-key">with</span>:
+          <span class="y-key">config</span>: <span class="y-str">p/owasp-top-ten p/nodejs p/jwt</span>
+
+      - <span class="y-key">name</span>: <span class="y-val">Dependency audit</span>
+        <span class="y-key">run</span>: <span class="y-val">npm audit --audit-level=high --workspaces</span>
+
+      - <span class="y-key">name</span>: <span class="y-val">Trivy container scan</span>
+        <span class="y-key">uses</span>: <span class="y-str">aquasecurity/trivy-action@master</span>
+        <span class="y-key">with</span>:
+          <span class="y-key">scan-type</span>:    <span class="y-str">fs</span>
+          <span class="y-key">severity</span>:     <span class="y-str">HIGH,CRITICAL</span>
+          <span class="y-key">exit-code</span>:    <span class="y-str">'1'</span>
+
+<span class="y-cmt">  # ── 3. Build & push immagini Docker ──────────────────────</span>
+  <span class="y-svc">build-push</span>:
+    <span class="y-key">runs-on</span>: <span class="y-str">ubuntu-latest</span>
+    <span class="y-key">needs</span>: [<span class="y-str">test</span>, <span class="y-str">security-scan</span>]
+    <span class="y-key">if</span>: <span class="y-str">github.ref == 'refs/heads/main'</span>
+    <span class="y-key">strategy</span>:
+      <span class="y-key">matrix</span>:
+        <span class="y-key">service</span>: [<span class="y-str">gateway</span>, <span class="y-str">auth-service</span>, <span class="y-str">scheduling-service</span>,
+                  <span class="y-str">presenze-service</span>, <span class="y-str">cartella-service</span>,
+                  <span class="y-str">hr-service</span>, <span class="y-str">notify-service</span>, <span class="y-str">wb-service</span>]
+    <span class="y-key">steps</span>:
+      - <span class="y-key">uses</span>: <span class="y-str">actions/checkout@v4</span>
+      - <span class="y-key">uses</span>: <span class="y-str">docker/login-action@v3</span>
+        <span class="y-key">with</span>:
+          <span class="y-key">registry</span>: <span class="y-str">ghcr.io</span>
+          <span class="y-key">username</span>: <span class="y-str">${{ github.actor }}</span>
+          <span class="y-key">password</span>: <span class="y-str">${{ secrets.GITHUB_TOKEN }}</span>
+      - <span class="y-key">name</span>: <span class="y-val">Build and push ${{ matrix.service }}</span>
+        <span class="y-key">uses</span>: <span class="y-str">docker/build-push-action@v5</span>
+        <span class="y-key">with</span>:
+          <span class="y-key">context</span>: <span class="y-str">./services/${{ matrix.service }}</span>
+          <span class="y-key">push</span>:    <span class="y-bool">true</span>
+          <span class="y-key">tags</span>:    <span class="y-str">ghcr.io/${{ env.IMAGE_NAME }}/${{ matrix.service }}:${{ github.sha }}</span>
+          <span class="y-key">cache-from</span>: <span class="y-str">type=gha</span>
+          <span class="y-key">cache-to</span>:   <span class="y-str">type=gha,mode=max</span>
+
+<span class="y-cmt">  # ── 4. Deploy su server produzione ───────────────────────</span>
+  <span class="y-svc">deploy</span>:
+    <span class="y-key">runs-on</span>: <span class="y-str">ubuntu-latest</span>
+    <span class="y-key">needs</span>: <span class="y-str">build-push</span>
+    <span class="y-key">environment</span>: <span class="y-str">production</span>
+    <span class="y-key">steps</span>:
+      - <span class="y-key">name</span>: <span class="y-val">Deploy via SSH</span>
+        <span class="y-key">uses</span>: <span class="y-str">appleboy/ssh-action@v1</span>
+        <span class="y-key">with</span>:
+          <span class="y-key">host</span>:     <span class="y-str">${{ secrets.PROD_HOST }}</span>
+          <span class="y-key">username</span>: <span class="y-str">${{ secrets.PROD_USER }}</span>
+          <span class="y-key">key</span>:      <span class="y-str">${{ secrets.PROD_SSH_KEY }}</span>
+          <span class="y-key">script</span>: <span class="y-str">|
+            cd /opt/webinclusive
+            export IMAGE_TAG=${{ github.sha }}
+
+            # Pull nuove immagini
+            docker compose pull
+
+            # Rolling update (zero downtime)
+            docker compose up -d --no-deps --scale gateway=2 gateway
+            sleep 15
+            docker compose up -d --no-deps gateway
+
+            # Aggiorna tutti gli altri servizi
+            docker compose up -d --no-deps \
+              auth-service scheduling-service presenze-service \
+              cartella-service hr-service notify-service
+
+            # Esegui migrations Prisma
+            docker compose exec -T auth-service \
+              npx prisma migrate deploy
+
+            # Cleanup immagini vecchie
+            docker image prune -f</span></pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BACKUP -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-backup">
+  <div class="sec">// Backup & Recovery — dati sanitari e whistleblowing</div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">infra/backup/backup.sh — script giornaliero</span><button class="copy-btn" onclick="copyPre(this)">COPIA</button></div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;font-size:0.68rem;">#!/bin/bash
+<span class="b-cmt"># Backup giornaliero WEB.INCLUSIVE</span>
+<span class="b-cmt"># Crontab: 0 2 * * * /opt/webinclusive/infra/backup/backup.sh</span>
+
+<span class="b-var">BACKUP_DIR</span>=<span class="b-str">"/opt/backups/webinclusive"</span>
+<span class="b-var">DATE</span>=$(date +%Y%m%d_%H%M%S)
+<span class="b-var">RETENTION_DAYS</span>=<span class="b-str">30</span>
+<span class="b-var">S3_BUCKET</span>=<span class="b-str">"s3://webinclusive-backups"</span>
+
+mkdir <span class="b-flag">-p</span> <span class="b-var">$BACKUP_DIR</span>
+
+<span class="b-cmt"># ── 1. Dump PostgreSQL principale ─────────────────────────</span>
+<span class="b-cmd">echo</span> <span class="b-str">"[$(date)] Backup DB principale..."</span>
+docker exec webinclusive-postgres-1 \
+  pg_dump <span class="b-flag">-U</span> <span class="b-var">$POSTGRES_USER</span> <span class="b-flag">-d</span> webinclusive \
+  <span class="b-flag">-Fc</span> <span class="b-flag">--no-password</span> | \
+  gzip > <span class="b-str">"<span class="b-var">$BACKUP_DIR</span>/main_db_<span class="b-var">$DATE</span>.dump.gz"</span>
+
+<span class="b-cmt"># ── 2. Dump PostgreSQL Whistleblowing (separato) ──────────</span>
+<span class="b-cmd">echo</span> <span class="b-str">"[$(date)] Backup DB whistleblowing..."</span>
+docker exec webinclusive-postgres-wb-1 \
+  pg_dump <span class="b-flag">-U</span> <span class="b-var">$WB_POSTGRES_USER</span> <span class="b-flag">-d</span> wb_db \
+  <span class="b-flag">-Fc</span> <span class="b-flag">--no-password</span> | \
+  gzip > <span class="b-str">"<span class="b-var">$BACKUP_DIR</span>/wb_db_<span class="b-var">$DATE</span>.dump.gz"</span>
+
+<span class="b-cmt"># ── 3. Backup MinIO (allegati clinici cifrati) ─────────────</span>
+<span class="b-cmd">echo</span> <span class="b-str">"[$(date)] Sync MinIO → S3..."</span>
+docker run <span class="b-flag">--rm</span> <span class="b-flag">--network</span> webinclusive_internal \
+  minio/mc:latest \
+  mirror minio/clinical-attachments \
+  <span class="b-str">"<span class="b-var">$S3_BUCKET</span>/minio/clinical_<span class="b-var">$DATE</span>/"</span>
+
+<span class="b-cmt"># ── 4. Cifra i backup prima dell'upload ───────────────────</span>
+<span class="b-cmd">echo</span> <span class="b-str">"[$(date)] Cifratura backup..."</span>
+<span class="b-kw">for</span> f <span class="b-kw">in</span> <span class="b-var">$BACKUP_DIR</span>/*_<span class="b-var">$DATE</span>*; <span class="b-kw">do</span>
+  gpg <span class="b-flag">--batch</span> <span class="b-flag">--yes</span> <span class="b-flag">--encrypt</span> \
+      <span class="b-flag">--recipient</span> <span class="b-var">$BACKUP_GPG_KEY</span> \
+      <span class="b-str">"$f"</span>
+  rm <span class="b-str">"$f"</span>  <span class="b-cmt"># rimuove versione non cifrata</span>
+<span class="b-kw">done</span>
+
+<span class="b-cmt"># ── 5. Upload su S3/offsite ───────────────────────────────</span>
+aws s3 sync <span class="b-var">$BACKUP_DIR</span> <span class="b-var">$S3_BUCKET</span>/db/ \
+  <span class="b-flag">--sse</span> aws:kms \
+  <span class="b-flag">--storage-class</span> STANDARD_IA
+
+<span class="b-cmt"># ── 6. Pulizia backup vecchi (retention 30 giorni) ────────</span>
+find <span class="b-var">$BACKUP_DIR</span> <span class="b-flag">-mtime</span> +<span class="b-var">$RETENTION_DAYS</span> <span class="b-flag">-delete</span>
+
+<span class="b-cmt"># ── 7. Notifica completamento ─────────────────────────────</span>
+<span class="b-var">STATUS</span>=$?
+<span class="b-kw">if</span> [ <span class="b-var">$STATUS</span> <span class="b-flag">-eq</span> 0 ]; <span class="b-kw">then</span>
+  curl <span class="b-flag">-s</span> <span class="b-flag">-X POST</span> <span class="b-var">$WEBHOOK_URL</span> \
+    <span class="b-flag">-d</span> <span class="b-str">'{"text":"✅ Backup WEB.INCLUSIVE completato: '"$DATE"'"}'</span>
+<span class="b-kw">else</span>
+  curl <span class="b-flag">-s</span> <span class="b-flag">-X POST</span> <span class="b-var">$WEBHOOK_URL</span> \
+    <span class="b-flag">-d</span> <span class="b-str">'{"text":"🚨 ERRORE backup WEB.INCLUSIVE: '"$DATE"'"}'</span>
+<span class="b-kw">fi</span></pre>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-head"><span class="card-title">Piano di backup — sintesi</span></div>
+        <div class="card-body" style="padding:0;">
+          <table class="tbl" style="margin:0;">
+            <thead><tr><th>Cosa</th><th>Frequenza</th><th>Retention</th><th>Destinazione</th></tr></thead>
+            <tbody>
+              <tr><td class="tbl-key">DB principale</td><td>Ogni giorno 02:00</td><td class="tbl-ok">30 giorni</td><td>S3 cifrato GPG</td></tr>
+              <tr><td class="tbl-key">DB whistleblowing</td><td>Ogni giorno 02:00</td><td class="tbl-ok">90 giorni</td><td>S3 separato</td></tr>
+              <tr><td class="tbl-key">Allegati clinici (MinIO)</td><td>Ogni giorno 03:00</td><td class="tbl-ok">365 giorni</td><td>S3 Glacier-IR</td></tr>
+              <tr><td class="tbl-key">WAL PostgreSQL</td><td>Continuo (pgWAL)</td><td class="tbl-warn">7 giorni</td><td>S3 (PITR)</td></tr>
+              <tr><td class="tbl-key">Config + secrets</td><td>Ogni commit</td><td class="tbl-ok">∞</td><td>Vault cifrato</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">Recovery test — procedura</span></div>
+        <div class="card-body" style="padding:0;">
+<pre class="code" style="border:none;border-radius:0 0 10px 10px;font-size:0.68rem;"><span class="b-cmt"># Restore DB principale da backup</span>
+gpg <span class="b-flag">--decrypt</span> main_db_20240415.dump.gz.gpg | \
+  gunzip | \
+  docker exec <span class="b-flag">-i</span> webinclusive-postgres-1 \
+    pg_restore <span class="b-flag">-U</span> <span class="b-var">$POSTGRES_USER</span> <span class="b-flag">-d</span> webinclusive \
+    <span class="b-flag">--clean</span> <span class="b-flag">--if-exists</span>
+
+<span class="b-cmt"># Point-in-time recovery (PITR) con pgWAL</span>
+<span class="b-cmt"># Ripristina fino a un timestamp preciso</span>
+docker exec webinclusive-postgres-1 \
+  psql <span class="b-flag">-c</span> <span class="b-str">"SELECT pg_wal_replay_pause();"</span>
+
+<span class="b-cmt"># RTO target: &lt; 1 ora</span>
+<span class="b-cmt"># RPO target: &lt; 24 ore (backup giornaliero)</span>
+<span class="b-cmt"># PITR: fino a 5 minuti di perdita</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- MONITORING -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-monitoring">
+  <div class="sec">// Monitoring — Prometheus + Grafana + alerting</div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">infra/prometheus/prometheus.yml</span><button class="copy-btn" onclick="copyPre(this)">COPIA</button></div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;font-size:0.68rem;"><span class="y-key">global</span>:
+  <span class="y-key">scrape_interval</span>:     <span class="y-str">15s</span>
+  <span class="y-key">evaluation_interval</span>: <span class="y-str">15s</span>
+  <span class="y-key">external_labels</span>:
+    <span class="y-key">environment</span>: <span class="y-str">production</span>
+    <span class="y-key">project</span>:     <span class="y-str">webinclusive</span>
+
+<span class="y-key">rule_files</span>:
+  - <span class="y-str">/etc/prometheus/alerts.yml</span>
+
+<span class="y-key">alerting</span>:
+  <span class="y-key">alertmanagers</span>:
+    - <span class="y-key">static_configs</span>:
+        - <span class="y-key">targets</span>: [<span class="y-str">alertmanager:9093</span>]
+
+<span class="y-key">scrape_configs</span>:
+  - <span class="y-key">job_name</span>: <span class="y-str">gateway</span>
+    <span class="y-key">static_configs</span>:
+      - <span class="y-key">targets</span>: [<span class="y-str">gateway:3000</span>]
+    <span class="y-key">metrics_path</span>: <span class="y-str">/metrics</span>
+
+  - <span class="y-key">job_name</span>: <span class="y-str">services</span>
+    <span class="y-key">static_configs</span>:
+      - <span class="y-key">targets</span>:
+        - <span class="y-str">auth-service:3001</span>
+        - <span class="y-str">scheduling-service:3002</span>
+        - <span class="y-str">presenze-service:3003</span>
+        - <span class="y-str">cartella-service:3004</span>
+        - <span class="y-str">hr-service:3005</span>
+        - <span class="y-str">notify-service:3006</span>
+
+  - <span class="y-key">job_name</span>: <span class="y-str">postgres</span>
+    <span class="y-key">static_configs</span>:
+      - <span class="y-key">targets</span>: [<span class="y-str">postgres-exporter:9187</span>]
+
+  - <span class="y-key">job_name</span>: <span class="y-str">redis</span>
+    <span class="y-key">static_configs</span>:
+      - <span class="y-key">targets</span>: [<span class="y-str">redis-exporter:9121</span>]
+
+  - <span class="y-key">job_name</span>: <span class="y-str">nginx</span>
+    <span class="y-key">static_configs</span>:
+      - <span class="y-key">targets</span>: [<span class="y-str">nginx-exporter:9113</span>]</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">alerts.yml — regole di alerting</span><button class="copy-btn" onclick="copyPre(this)">COPIA</button></div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;font-size:0.68rem;"><span class="y-key">groups</span>:
+  - <span class="y-key">name</span>: <span class="y-val">webinclusive_critical</span>
+    <span class="y-key">rules</span>:
+
+    - <span class="y-key">alert</span>: <span class="y-val">ServiceDown</span>
+      <span class="y-key">expr</span>:  <span class="y-val">up == 0</span>
+      <span class="y-key">for</span>:   <span class="y-str">1m</span>
+      <span class="y-key">labels</span>:
+        <span class="y-key">severity</span>: <span class="y-str">critical</span>
+      <span class="y-key">annotations</span>:
+        <span class="y-key">summary</span>: <span class="y-str">"Servizio {{ $labels.job }} non raggiungibile"</span>
+
+    - <span class="y-key">alert</span>: <span class="y-val">HighErrorRate</span>
+      <span class="y-key">expr</span>: <span class="y-val">|
+        rate(http_requests_total{status=~"5.."}[5m])
+        / rate(http_requests_total[5m]) > 0.05</span>
+      <span class="y-key">for</span>:   <span class="y-str">2m</span>
+      <span class="y-key">labels</span>:
+        <span class="y-key">severity</span>: <span class="y-str">warning</span>
+      <span class="y-key">annotations</span>:
+        <span class="y-key">summary</span>: <span class="y-str">"Tasso errori > 5% su {{ $labels.job }}"</span>
+
+    - <span class="y-key">alert</span>: <span class="y-val">SlowResponses</span>
+      <span class="y-key">expr</span>: <span class="y-val">|
+        histogram_quantile(0.95,
+          rate(http_request_duration_seconds_bucket[5m])
+        ) > 2</span>
+      <span class="y-key">for</span>:   <span class="y-str">5m</span>
+      <span class="y-key">labels</span>:
+        <span class="y-key">severity</span>: <span class="y-str">warning</span>
+      <span class="y-key">annotations</span>:
+        <span class="y-key">summary</span>: <span class="y-str">"P95 latency > 2s su {{ $labels.job }}"</span>
+
+    - <span class="y-key">alert</span>: <span class="y-val">DiskSpaceLow</span>
+      <span class="y-key">expr</span>: <span class="y-val">|
+        (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.15</span>
+      <span class="y-key">for</span>:   <span class="y-str">10m</span>
+      <span class="y-key">labels</span>:
+        <span class="y-key">severity</span>: <span class="y-str">warning</span>
+      <span class="y-key">annotations</span>:
+        <span class="y-key">summary</span>: <span class="y-str">"Disco sotto 15% su {{ $labels.mountpoint }}"</span>
+
+    - <span class="y-key">alert</span>: <span class="y-val">PostgresConnectionsHigh</span>
+      <span class="y-key">expr</span>: <span class="y-val">|
+        pg_stat_activity_count > 150</span>
+      <span class="y-key">for</span>:   <span class="y-str">5m</span>
+      <span class="y-key">labels</span>:
+        <span class="y-key">severity</span>: <span class="y-str">warning</span>
+      <span class="y-key">annotations</span>:
+        <span class="y-key">summary</span>: <span class="y-str">"Connessioni PostgreSQL > 150"</span>
+
+    - <span class="y-key">alert</span>: <span class="y-val">BackupMissing</span>
+      <span class="y-key">expr</span>: <span class="y-val">|
+        time() - backup_last_success_timestamp > 86400 + 3600</span>
+      <span class="y-key">for</span>:   <span class="y-str">0m</span>
+      <span class="y-key">labels</span>:
+        <span class="y-key">severity</span>: <span class="y-str">critical</span>
+      <span class="y-key">annotations</span>:
+        <span class="y-key">summary</span>: <span class="y-str">"Backup non eseguito nelle ultime 25 ore!"</span></pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="card-title">Metriche custom — ogni microservizio espone /metrics</span></div>
+    <div class="card-body" style="padding:0;">
+      <table class="tbl" style="margin:0;">
+        <thead><tr><th>Metrica</th><th>Tipo</th><th>Servizio</th><th>Descrizione</th></tr></thead>
+        <tbody>
+          <tr><td class="tbl-key">wi_checkin_total</td><td>Counter</td><td>presenze</td><td>Check-in totali (label: verified, offline)</td></tr>
+          <tr><td class="tbl-key">wi_checkout_duration_seconds</td><td>Histogram</td><td>presenze</td><td>Durata effettiva visita</td></tr>
+          <tr><td class="tbl-key">wi_offline_queue_size</td><td>Gauge</td><td>presenze</td><td>Record in coda offline non sincronizzati</td></tr>
+          <tr><td class="tbl-key">wi_clinical_access_total</td><td>Counter</td><td>cartella</td><td>Accessi cartella sanitaria per ruolo</td></tr>
+          <tr><td class="tbl-key">wi_appointments_created_total</td><td>Counter</td><td>scheduling</td><td>Appuntamenti pianificati</td></tr>
+          <tr><td class="tbl-key">wi_appointments_cancelled_total</td><td>Counter</td><td>scheduling</td><td>Appuntamenti cancellati</td></tr>
+          <tr><td class="tbl-key">wi_push_sent_total</td><td>Counter</td><td>notify</td><td>Push inviati (label: platform, status)</td></tr>
+          <tr><td class="tbl-key">wi_auth_failures_total</td><td>Counter</td><td>auth</td><td>Tentativi di login falliti</td></tr>
+          <tr><td class="tbl-key">wi_wb_reports_total</td><td>Counter</td><td>wb</td><td>Segnalazioni whistleblowing ricevute</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- DEPLOY CHECKLIST -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-checklist">
+  <div class="sec">// Pre-deploy checklist — produzione</div>
+
+  <div class="g2">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-head"><span class="card-title" style="color:var(--teal);">🔐 Sicurezza</span></div>
+        <div class="card-body">
+          <div class="checklist">
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>JWT_ACCESS_SECRET</strong> generato con openssl rand -hex 64</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>ENCRYPTION_KEY</strong> AES-256 generato e conservato in Vault/KMS</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>WB_ENCRYPTION_KEY</strong> separato dalla chiave principale</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Certificati TLS</strong> validi (Let's Encrypt o CA aziendale)</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>CORS origins</strong> configurati solo per i domini autorizzati</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>PostgreSQL</strong> password admin cambiata dal default</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>MinIO</strong> password admin cambiata, accesso console disabilitato in prod</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check_text"><strong>Firewall</strong>: solo porta 443 e 80 aperte verso internet</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Container</strong> girano come utente non-root</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Trivy scan</strong> superato senza vulnerabilità CRITICAL</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title" style="color:var(--amber);">⚙️ Configurazione</span></div>
+        <div class="card-body">
+          <div class="checklist">
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>.env</strong> non committato in git (solo .env.example)</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Healthcheck</strong> configurato su tutti i servizi</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Restart policy</strong> = unless-stopped su tutti i container</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Logging</strong> con max-size e max-file per evitare riempimento disco</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>FCM / APNS</strong> chiavi configurate e testate</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>SMTP</strong> testato con email di prova</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-head"><span class="card-title" style="color:var(--green);">🗄️ Database</span></div>
+        <div class="card-body">
+          <div class="checklist">
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Migrations Prisma</strong> eseguite su DB produzione</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Utenti DB</strong> creati con privilegi minimi (uno per servizio)</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Indici</strong> creati (CONCURRENTLY per zero downtime)</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Backup</strong> testato con restore su ambiente staging</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>PostgreSQL WAL</strong> configurato per PITR</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>DB Whistleblowing</strong> su istanza e volume separati</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title" style="color:var(--purple);">📊 Monitoring</span></div>
+        <div class="card-body">
+          <div class="checklist">
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Prometheus</strong> raccoglie metriche da tutti i servizi</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Grafana dashboard</strong> importata e verificata</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Alert rules</strong> caricate e testate con alertmanager</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Canale notifiche</strong> configurato (Teams/Slack/email)</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Uptimerobot</strong> o simile per check esterno endpoint /health</span></div>
+            <div class="check-item"><span class="check-icon">✅</span><span class="check-text"><strong>Log retention</strong> configurato (max 50MB per container)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="card-title">Comandi deploy rapido — primer avvio</span><button class="copy-btn" onclick="copyPre(this)">COPIA</button></div>
+<pre class="code no-border" style="border-radius:0 0 10px 10px;"><span class="b-cmt"># 1. Clone e configurazione iniziale</span>
+<span class="b-cmd">git clone</span> https://github.com/tuaorg/webinclusive.git /opt/webinclusive
+<span class="b-cmd">cd</span> /opt/webinclusive
+<span class="b-cmd">cp</span> .env.example .env
+<span class="b-cmt"># → Modifica .env con tutti i valori reali</span>
+
+<span class="b-cmt"># 2. Genera secrets</span>
+<span class="b-cmd">echo</span> <span class="b-str">"JWT_ACCESS_SECRET=$(openssl rand -hex 64)"</span>  >> .env
+<span class="b-cmd">echo</span> <span class="b-str">"ENCRYPTION_KEY=$(openssl rand -hex 32)"</span>      >> .env
+<span class="b-cmd">echo</span> <span class="b-str">"WB_ENCRYPTION_KEY=$(openssl rand -hex 32)"</span>   >> .env
+
+<span class="b-cmt"># 3. Avvia infrastruttura data layer prima</span>
+docker compose up <span class="b-flag">-d</span> postgres postgres-wb redis minio
+<span class="b-cmd">sleep 15</span>  <span class="b-cmt"># attendi healthcheck</span>
+
+<span class="b-cmt"># 4. Esegui migrations</span>
+docker compose run <span class="b-flag">--rm</span> auth-service npx prisma migrate deploy
+docker compose run <span class="b-flag">--rm</span> scheduling-service npx prisma migrate deploy
+docker compose run <span class="b-flag">--rm</span> presenze-service npx prisma migrate deploy
+docker compose run <span class="b-flag">--rm</span> cartella-service npx prisma migrate deploy
+docker compose run <span class="b-flag">--rm</span> hr-service npx prisma migrate deploy
+docker compose run <span class="b-flag">--rm</span> wb-service npx prisma migrate deploy
+
+<span class="b-cmt"># 5. Crea bucket MinIO</span>
+docker compose run <span class="b-flag">--rm</span> minio mc mb local/clinical-attachments
+docker compose run <span class="b-flag">--rm</span> minio mc mb local/quality-documents
+
+<span class="b-cmt"># 6. Avvia tutto</span>
+docker compose up <span class="b-flag">-d</span>
+
+<span class="b-cmt"># 7. Verifica</span>
+docker compose ps
+docker compose logs <span class="b-flag">-f</span> gateway</pre>
+  </div>
+</div>
+
+<script>
+function show(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'))
+  document.getElementById('page-' + name).classList.add('active')
+  el.classList.add('active')
+}
+function copyPre(btn) {
+  const card = btn.closest('.card')
+  const pre = card.querySelector('pre.code')
+  if (!pre) return
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    const orig = btn.textContent
+    btn.textContent = 'COPIATO ✓'
+    setTimeout(() => btn.textContent = orig, 2000)
+  })
+}
+</script>
+</body>
+</html>

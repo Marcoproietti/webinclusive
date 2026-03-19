@@ -1,0 +1,248 @@
+// ─────────────────────────────────────────────────────────
+// WEB.INCLUSIVE — Prisma Schema (scheduling-service)
+// Dominio: Beneficiari, Piani Cura, Tipi Servizio,
+//          Appuntamenti, Turni, Messaggi CO
+// ─────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enum ──────────────────────────────────────────────────
+
+enum BeneficiaryStatus {
+  active
+  suspended
+  discharged
+  deceased
+}
+
+enum CarePlanStatus {
+  draft
+  active
+  suspended
+  closed
+}
+
+enum ServiceCategory {
+  infermieristica
+  riabilitativa
+  assistenziale
+  sociale
+  medica
+}
+
+enum QualificationType {
+  OSS
+  OTS
+  infermiere
+  fisioterapista
+  assistente_sociale
+}
+
+enum AppointmentStatus {
+  scheduled
+  confirmed
+  in_progress
+  completed
+  cancelled
+  missed
+}
+
+enum ShiftType {
+  mattina
+  pomeriggio
+  notte
+  festivo
+  reperibilita
+}
+
+enum ShiftStatus {
+  planned
+  confirmed
+  completed
+  cancelled
+}
+
+enum MessageChannel {
+  operator_co
+  caregiver_co
+  broadcast
+}
+
+// ── Beneficiary ───────────────────────────────────────────
+
+model Beneficiary {
+  id                    String            @id @default(uuid()) @db.Uuid
+  fiscalCodeHash        String            @unique @map("fiscal_code_hash") // HMAC per ricerca
+  firstName             String            @map("first_name")               // AES-256-GCM
+  lastName              String            @map("last_name")
+  dateOfBirth           String            @map("date_of_birth")            // cifrato
+  address               String                                             // cifrato
+  phone                 String?                                            // cifrato
+  districtCode          String?           @map("district_code") @db.VarChar(20)
+  aslCode               String?           @map("asl_code")      @db.VarChar(20)
+  assignedCoordinatorId String?           @map("assigned_coordinator_id") @db.Uuid
+  status                BeneficiaryStatus @default(active)
+  intakeDate            DateTime          @map("intake_date") @db.Date
+  dischargeDate         DateTime?         @map("discharge_date") @db.Date
+  notes                 String?           // cifrato
+  createdAt             DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  carePlans  CarePlan[]
+
+  @@index([assignedCoordinatorId])
+  @@index([status])
+  @@map("beneficiaries")
+  @@schema("scheduling")
+}
+
+// ── ServiceType ───────────────────────────────────────────
+
+model ServiceType {
+  id                   String           @id @default(uuid()) @db.Uuid
+  code                 String           @unique @db.VarChar(20)
+  name                 String           @db.VarChar(100)
+  category             ServiceCategory
+  requiredQualification QualificationType @map("required_qualification")
+  defaultDurationMin   Int              @map("default_duration_min") @db.SmallInt
+  isBillable           Boolean          @default(true) @map("is_billable")
+  isActive             Boolean          @default(true) @map("is_active")
+  description          String?
+
+  appointments Appointment[]
+
+  @@map("service_types")
+  @@schema("scheduling")
+}
+
+// ── CarePlan ──────────────────────────────────────────────
+
+model CarePlan {
+  id               String        @id @default(uuid()) @db.Uuid
+  beneficiaryId    String        @map("beneficiary_id") @db.Uuid
+  planCode         String        @map("plan_code") @db.VarChar(30)
+  aslAuthorization String?       @map("asl_authorization") @db.VarChar(50)
+  startDate        DateTime      @map("start_date") @db.Date
+  endDate          DateTime?     @map("end_date") @db.Date
+  weeklyHours      Decimal       @map("weekly_hours") @db.Decimal(5, 2)
+  status           CarePlanStatus @default(draft)
+  notes            String?
+  createdBy        String        @map("created_by") @db.Uuid
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  beneficiary  Beneficiary  @relation(fields: [beneficiaryId], references: [id])
+  appointments Appointment[]
+  planServices CarePlanService[]
+
+  @@index([beneficiaryId, status])
+  @@map("care_plans")
+  @@schema("scheduling")
+}
+
+// ── CarePlanService (servizi inclusi nel piano) ───────────
+
+model CarePlanService {
+  id            String    @id @default(uuid()) @db.Uuid
+  carePlanId    String    @map("care_plan_id") @db.Uuid
+  serviceTypeId String    @map("service_type_id") @db.Uuid
+  frequency     String    @db.VarChar(30) // es: "3x_week", "daily", "weekly"
+  durationMin   Int?      @map("duration_min") @db.SmallInt
+  notes         String?
+
+  carePlan CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+
+  @@map("care_plan_services")
+  @@schema("scheduling")
+}
+
+// ── Appointment ───────────────────────────────────────────
+
+model Appointment {
+  id              String            @id @default(uuid()) @db.Uuid
+  carePlanId      String            @map("care_plan_id") @db.Uuid
+  operatorId      String            @map("operator_id") @db.Uuid
+  serviceTypeId   String            @map("service_type_id") @db.Uuid
+  scheduledStart  DateTime          @map("scheduled_start") @db.Timestamptz
+  scheduledEnd    DateTime          @map("scheduled_end") @db.Timestamptz
+  status          AppointmentStatus @default(scheduled)
+  recurrenceRule  String?           @map("recurrence_rule")  // iCal RRULE
+  recurrenceId    String?           @map("recurrence_id") @db.Uuid // padre serie ricorrente
+  notes           String?
+  cancellationReason String?        @map("cancellation_reason")
+  reassignedFrom  String?           @map("reassigned_from") @db.Uuid // operatore precedente
+  createdBy       String            @map("created_by") @db.Uuid
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  carePlan    CarePlan    @relation(fields: [carePlanId], references: [id])
+  serviceType ServiceType @relation(fields: [serviceTypeId], references: [id])
+
+  @@index([operatorId, scheduledStart])
+  @@index([carePlanId])
+  @@index([status, scheduledStart])
+  @@index([recurrenceId])
+  @@map("appointments")
+  @@schema("scheduling")
+}
+
+// ── Shift ─────────────────────────────────────────────────
+
+model Shift {
+  id            String      @id @default(uuid()) @db.Uuid
+  operatorId    String      @map("operator_id") @db.Uuid
+  shiftDate     DateTime    @map("shift_date") @db.Date
+  startTime     String      @map("start_time") @db.VarChar(5)  // "HH:MM"
+  endTime       String      @map("end_time")   @db.VarChar(5)
+  shiftType     ShiftType   @map("shift_type")
+  territoryZone String?     @map("territory_zone") @db.VarChar(50)
+  status        ShiftStatus @default(planned)
+  notes         String?
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([operatorId, shiftDate, startTime])
+  @@index([operatorId, shiftDate])
+  @@index([territoryZone, shiftDate])
+  @@map("shifts")
+  @@schema("scheduling")
+}
+
+// ── OperatorAvailability (eccezioni: ferie, malattia) ─────
+
+model OperatorAvailability {
+  id          String   @id @default(uuid()) @db.Uuid
+  operatorId  String   @map("operator_id") @db.Uuid
+  date        DateTime @db.Date
+  isAvailable Boolean  @default(false) @map("is_available")
+  reason      String?  @db.VarChar(100) // "ferie", "malattia", "permesso"
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([operatorId, date])
+  @@map("operator_availability")
+  @@schema("scheduling")
+}
+
+// ── Message (CO ↔ operatori/caregiver) ───────────────────
+
+model Message {
+  id             String         @id @default(uuid()) @db.Uuid
+  senderUserId   String         @map("sender_user_id") @db.Uuid
+  receiverUserId String?        @map("receiver_user_id") @db.Uuid // null = broadcast
+  channel        MessageChannel
+  body           String         // cifrato AES-256-GCM
+  isRead         Boolean        @default(false) @map("is_read")
+  readAt         DateTime?      @map("read_at") @db.Timestamptz
+  sentAt         DateTime       @default(now()) @map("sent_at") @db.Timestamptz
+
+  @@index([receiverUserId, isRead, sentAt(sort: Desc)])
+  @@index([senderUserId, sentAt(sort: Desc)])
+  @@map("messages")
+  @@schema("scheduling")
+}

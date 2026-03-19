@@ -1,0 +1,76 @@
+# ─────────────────────────────────────────────────────────
+# docker-compose.dev.yml
+# Ambiente sviluppo locale — solo infrastruttura
+# I servizi Node girano fuori da Docker (npm run dev)
+# ─────────────────────────────────────────────────────────
+
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB:       webinclusive
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: devpassword
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d webinclusive"]
+      interval: 5s
+      timeout:  3s
+      retries:  5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout:  3s
+      retries:  3
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER:     minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_dev_data:/data
+
+  # Adminer per visualizzare PostgreSQL in sviluppo
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  # Redis Commander per visualizzare Redis
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    depends_on:
+      - redis
+
+volumes:
+  postgres_dev_data:
+  minio_dev_data:

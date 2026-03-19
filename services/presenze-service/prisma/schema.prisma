@@ -1,0 +1,146 @@
+// ─────────────────────────────────────────────────────────
+// WEB.INCLUSIVE — Prisma Schema (presenze-service)
+// Dominio: presenze certificate, coda offline, report
+// ─────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AttendanceStatus {
+  checked_in       // operatore entrato
+  checked_out      // operatore uscito (completato)
+  offline_pending  // salvato offline, in attesa di sync
+  sync_failed      // sync fallita dopo MAX_ATTEMPTS
+}
+
+enum SyncRecordType {
+  checkin
+  checkout
+}
+
+// ── AttendanceRecord ──────────────────────────────────────
+
+model AttendanceRecord {
+  id             String           @id @default(uuid()) @db.Uuid
+  appointmentId  String           @map("appointment_id") @db.Uuid
+  operatorId     String           @map("operator_id") @db.Uuid
+
+  // Check-in
+  checkInAt      DateTime         @map("check_in_at") @db.Timestamptz
+  checkInLat     Decimal          @map("check_in_lat")  @db.Decimal(9, 6)
+  checkInLng     Decimal          @map("check_in_lng")  @db.Decimal(9, 6)
+  checkInSig     String           @map("check_in_sig")   // HMAC-SHA256 firmato da device
+
+  // Check-out (nullable finché non avviene)
+  checkOutAt     DateTime?        @map("check_out_at") @db.Timestamptz
+  checkOutLat    Decimal?         @map("check_out_lat") @db.Decimal(9, 6)
+  checkOutLng    Decimal?         @map("check_out_lng") @db.Decimal(9, 6)
+  checkOutSig    String?          @map("check_out_sig")
+
+  // Verifica server-side
+  isVerified     Boolean          @default(false) @map("is_verified")
+  geofenceOk     Boolean          @default(false) @map("geofence_ok")
+  distanceMeters Int?             @map("distance_meters") // distanza dal beneficiario
+
+  // Durata effettiva in minuti (calcolata al checkout)
+  durationMin    Int?             @map("duration_min")
+
+  // Stato
+  status         AttendanceStatus @default(checked_in)
+
+  // Note operatore (aggiunte dopo checkout)
+  hasNote        Boolean          @default(false) @map("has_note")
+
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+
+  note ServiceNote?
+
+  @@unique([appointmentId])            // un solo record per appuntamento
+  @@index([operatorId, checkInAt(sort: Desc)])
+  @@index([appointmentId])
+  @@index([status])
+  @@map("attendance_records")
+  @@schema("presenze")
+}
+
+// ── ServiceNote — diario operatore ───────────────────────
+
+model ServiceNote {
+  id           String   @id @default(uuid()) @db.Uuid
+  attendanceId String   @unique @map("attendance_id") @db.Uuid
+  operatorId   String   @map("operator_id") @db.Uuid
+
+  // Testo nota (cifrato AES-256-GCM)
+  noteText     String   @map("note_text")
+
+  // Parametri vitali (JSONB strutturato)
+  vitalSigns   Json?    @map("vital_signs")
+  // {
+  //   bp_systolic: number, bp_diastolic: number,
+  //   heart_rate: number, temperature: number,
+  //   oxygen_sat: number, respiratory_rate: number
+  // }
+
+  painScale    Int?     @map("pain_scale") @db.SmallInt   // 0-10 NRS
+  alerts       String[] // array di segnalazioni libere
+
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  attendance AttendanceRecord @relation(fields: [attendanceId], references: [id])
+
+  @@index([operatorId, createdAt(sort: Desc)])
+  @@map("service_notes")
+  @@schema("presenze")
+}
+
+// ── SyncQueue — coda offline ──────────────────────────────
+
+model SyncQueue {
+  id          Int            @id @default(autoincrement())
+  operatorId  String         @map("operator_id") @db.Uuid
+  recordType  SyncRecordType @map("record_type")
+
+  // Payload JSON serializzato (stesso formato endpoint online)
+  payload     Json
+
+  // Stato sync
+  synced      Boolean        @default(false)
+  syncedAt    DateTime?      @map("synced_at") @db.Timestamptz
+  attempts    Int            @default(0)
+  lastError   String?        @map("last_error")
+  maxAttempts Int            @default(5) @map("max_attempts")
+
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([operatorId, synced])
+  @@index([synced, createdAt])
+  @@map("sync_queue")
+  @@schema("presenze")
+}
+
+// ── DeviceRegistry — secret HMAC per ogni dispositivo ────
+
+model DeviceRegistry {
+  id           String   @id @default(uuid()) @db.Uuid
+  operatorId   String   @map("operator_id") @db.Uuid
+  deviceId     String   @map("device_id")     // identificatore univoco del device
+  deviceSecret String   @map("device_secret") // HMAC-SHA256 secret (32 byte hex)
+  deviceName   String?  @map("device_name")   // es "Samsung Galaxy A54"
+  platform     String?  @db.VarChar(10)        // "android" | "ios"
+  isActive     Boolean  @default(true) @map("is_active")
+  lastUsedAt   DateTime? @map("last_used_at") @db.Timestamptz
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([operatorId, deviceId])
+  @@index([operatorId])
+  @@map("device_registry")
+  @@schema("presenze")
+}

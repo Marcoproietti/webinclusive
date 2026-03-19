@@ -1,0 +1,28 @@
+{
+  "name": "@webinclusive/notify-service",
+  "version": "1.0.0",
+  "description": "WEB.INCLUSIVE — Notify Service (FCM, APNS, email)",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev":       "tsx watch src/index.ts",
+    "build":     "tsc --project tsconfig.json",
+    "start":     "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "bullmq":             "^5.8.3",
+    "fastify":            "^4.28.1",
+    "@fastify/helmet":    "^11.1.1",
+    "firebase-admin":     "^12.2.0",
+    "ioredis":            "^5.3.2",
+    "nodemailer":         "^6.9.14",
+    "zod":                "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.15",
+    "@types/node":       "^20.14.9",
+    "tsx":               "^4.16.2",
+    "typescript":        "^5.5.3"
+  }
+}

@@ -1,0 +1,95 @@
+// ─────────────────────────────────────────────────────────
+// WEB.INCLUSIVE — Whistleblowing Schema (D.Lgs. 24/2023)
+// NOTA: DB FISICAMENTE SEPARATO — nessuna FK verso il DB principale
+// Identità segnalante anonimizzata con SHA-256 HMAC irreversibile
+// ─────────────────────────────────────────────────────────
+
+generator client { provider = "prisma-client-js" }
+datasource db    { provider = "postgresql"; url = env("WB_DATABASE_URL") }
+
+enum ReportStatus {
+  received          // ricevuta, non ancora presa in carico
+  under_review      // in istruttoria
+  awaiting_info     // in attesa di chiarimenti dal segnalante
+  closed_founded    // chiusa — segnalazione fondata
+  closed_unfounded  // chiusa — non fondata
+  closed_archived   // archiviata
+}
+
+enum ReportCategory {
+  violazione_normativa
+  violazione_codice_etico
+  corruzione
+  frode
+  discriminazione
+  sicurezza_lavoro
+  privacy_gdpr
+  altro
+}
+
+// ── Segnalazione ──────────────────────────────────────────
+
+model WbReport {
+  id            String         @id @default(uuid()) @db.Uuid
+
+  // Codice di tracking restituito al segnalante per follow-up
+  // Generato random 32 char — non collegabile all'identità
+  trackingCode  String         @unique @map("tracking_code") @db.VarChar(32)
+
+  category      ReportCategory
+  status        ReportStatus   @default(received)
+  isAnonymous   Boolean        @default(true) @map("is_anonymous")
+
+  // Tutto cifrato AES-256-GCM con chiave SEPARATA da quella del DB principale
+  description   String         // cifrato
+  reportedEntity String?       @map("reported_entity") // cifrato — sogg. segnalato
+  incidentDate  String?        @map("incident_date")   // cifrato — data evento
+  evidence      String?        // cifrato — descrizione prove
+
+  // Hash HMAC del segnalante (non reversibile, solo per de-duplicazione)
+  // Null se anonimo completamente
+  reporterHash  String?        @map("reporter_hash") @db.VarChar(64)
+
+  submittedAt   DateTime       @default(now()) @map("submitted_at") @db.Timestamptz
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  updates WbReportUpdate[]
+
+  @@index([status])
+  @@index([submittedAt(sort: Desc)])
+  @@map("wb_reports")
+}
+
+// ── Aggiornamenti istruttoria ─────────────────────────────
+
+model WbReportUpdate {
+  id         String       @id @default(uuid()) @db.Uuid
+  reportId   String       @map("report_id") @db.Uuid
+  newStatus  ReportStatus @map("new_status")
+
+  // cifrato — note del responsabile
+  note       String?
+
+  // Ruolo del gestore (NON userId — per proteggere anche chi gestisce)
+  handlerRole String      @map("handler_role") @db.VarChar(50)
+  updatedAt   DateTime    @default(now()) @map("updated_at") @db.Timestamptz
+
+  report WbReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@map("wb_report_updates")
+}
+
+// ── Access log segnalazioni (chi ha visto cosa) ───────────
+
+model WbAccessLog {
+  id           BigInt   @id @default(autoincrement())
+  reportId     String   @map("report_id") @db.Uuid
+  handlerRole  String   @map("handler_role") @db.VarChar(50)
+  action       String   @db.VarChar(50)
+  ipAddress    String?  @map("ip_address")
+  accessedAt   DateTime @default(now()) @map("accessed_at") @db.Timestamptz
+
+  @@index([reportId, accessedAt(sort: Desc)])
+  @@map("wb_access_logs")
+}

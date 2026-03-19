@@ -1,0 +1,328 @@
+###############################################################
+# WEB.INCLUSIVE — Docker Compose Production
+###############################################################
+version: "3.9"
+
+# ── YAML Anchors ────────────────────────────────────────────
+x-common-env: &common-env
+  NODE_ENV:          production
+  DATABASE_URL:      ${DATABASE_URL}
+  REDIS_URL:         redis://:${REDIS_PASSWORD}@redis:6379
+  JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+  ENCRYPTION_KEY:    ${ENCRYPTION_KEY}
+  ALLOWED_ORIGINS:   ${ALLOWED_ORIGINS}
+
+x-svc: &svc
+  restart: unless-stopped
+  networks: [internal]
+  logging:
+    driver: json-file
+    options: { max-size: "50m", max-file: "5" }
+  deploy:
+    resources:
+      limits:   { memory: 512M }
+      reservations: { memory: 128M }
+
+services:
+
+  # ── NGINX Edge ────────────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/certs:/etc/nginx/certs:ro
+      - nginx_logs:/var/log/nginx
+      - web_dist:/usr/share/nginx/html:ro
+    depends_on: [gateway]
+    networks: [public, internal]
+    logging:
+      driver: json-file
+      options: { max-size: "100m", max-file: "10" }
+
+  # ── API Gateway ───────────────────────────────────────────
+  gateway:
+    <<: *svc
+    build: { context: ./services/gateway, dockerfile: Dockerfile }
+    environment:
+      <<: *common-env
+      PORT:                   3000
+      COOKIE_SECRET:          ${COOKIE_SECRET}
+      RATE_LIMIT_MAX:         ${RATE_LIMIT_MAX:-100}
+      RATE_LIMIT_AUTH_MAX:    ${RATE_LIMIT_AUTH_MAX:-10}
+      AUTH_SERVICE_URL:       http://auth-service:3001
+      SCHEDULING_SERVICE_URL: http://scheduling-service:3002
+      PRESENZE_SERVICE_URL:   http://presenze-service:3003
+      CARTELLA_SERVICE_URL:   http://cartella-service:3004
+      HR_SERVICE_URL:         http://hr-service:3005
+      NOTIFY_SERVICE_URL:     http://notify-service:3006
+      WB_SERVICE_URL:         http://wb-service:3007
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://localhost:3000/health"]
+      interval: 30s; timeout: 5s; retries: 3; start_period: 15s
+
+  # ── Auth Service ──────────────────────────────────────────
+  auth-service:
+    <<: *svc
+    build: { context: ./services/auth-service }
+    environment:
+      <<: *common-env
+      PORT:          3001
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+      MFA_ISSUER:    WEB.INCLUSIVE
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://localhost:3001/health"]
+      interval: 30s; timeout: 5s; retries: 3
+
+  # ── Scheduling Service ────────────────────────────────────
+  scheduling-service:
+    <<: *svc
+    build: { context: ./services/scheduling-service }
+    environment:
+      <<: *common-env
+      PORT: 3002
+      MAX_APPT_GENERATE: 365
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://localhost:3002/health"]
+      interval: 30s; timeout: 5s; retries: 3
+
+  # ── Presenze Service ──────────────────────────────────────
+  presenze-service:
+    <<: *svc
+    build: { context: ./services/presenze-service }
+    environment:
+      <<: *common-env
+      PORT:                   3003
+      GEOFENCE_RADIUS_METERS: ${GEOFENCE_RADIUS_METERS:-200}
+      OFFLINE_SYNC_MAX_HOURS: ${OFFLINE_SYNC_MAX_HOURS:-2}
+      SCHEDULING_SERVICE_URL: http://scheduling-service:3002
+      AUTH_SERVICE_URL:       http://auth-service:3001
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://localhost:3003/health"]
+      interval: 30s; timeout: 5s; retries: 3
+
+  # ── Cartella Service ──────────────────────────────────────
+  cartella-service:
+    <<: *svc
+    build: { context: ./services/cartella-service }
+    environment:
+      <<: *common-env
+      PORT:             3004
+      MINIO_ENDPOINT:   minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET:     clinical-attachments
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+      minio:    { condition: service_healthy }
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://localhost:3004/health"]
+      interval: 30s; timeout: 5s; retries: 3
+
+  # ── HR Service ────────────────────────────────────────────
+  hr-service:
+    <<: *svc
+    build: { context: ./services/hr-service }
+    environment:
+      <<: *common-env
+      PORT: 3005
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://localhost:3005/health"]
+      interval: 30s; timeout: 5s; retries: 3
+
+  # ── Notify Service ────────────────────────────────────────
+  notify-service:
+    <<: *svc
+    build: { context: ./services/notify-service }
+    environment:
+      NODE_ENV:             production
+      PORT:                 3006
+      REDIS_URL:            redis://:${REDIS_PASSWORD}@redis:6379
+      FCM_SERVER_KEY:       ${FCM_SERVER_KEY}
+      FIREBASE_PROJECT_ID:  ${FIREBASE_PROJECT_ID}
+      FIREBASE_CLIENT_EMAIL:${FIREBASE_CLIENT_EMAIL}
+      FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY}
+      SMTP_HOST:            ${SMTP_HOST}
+      SMTP_PORT:            ${SMTP_PORT:-587}
+      SMTP_USER:            ${SMTP_USER}
+      SMTP_PASS:            ${SMTP_PASS}
+      SMTP_FROM:            ${SMTP_FROM:-noreply@webinclusive.it}
+      AUTH_SERVICE_URL:     http://auth-service:3001
+    depends_on:
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://localhost:3006/health"]
+      interval: 30s; timeout: 5s; retries: 3
+
+  # ── Whistleblowing Service (RETE ISOLATA) ─────────────────
+  wb-service:
+    restart: unless-stopped
+    build: { context: ./services/wb-service }
+    environment:
+      NODE_ENV:               production
+      PORT:                   3007
+      WB_DATABASE_URL:        ${WB_DATABASE_URL}
+      JWT_ACCESS_SECRET:      ${JWT_ACCESS_SECRET}
+      WB_ENCRYPTION_KEY:      ${WB_ENCRYPTION_KEY}
+      WB_REPORTER_HMAC_KEY:   ${WB_REPORTER_HMAC_KEY}
+      ALLOWED_ORIGINS:        ${ALLOWED_ORIGINS}
+    networks: [wb_network]    # SOLO rete wb — NON internal
+    depends_on:
+      postgres-wb: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://localhost:3007/health"]
+      interval: 30s; timeout: 5s; retries: 3
+    logging:
+      driver: json-file
+      options: { max-size: "50m", max-file: "5" }
+
+  # ── PostgreSQL (DB principale) ────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       webinclusive
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks: [internal]
+    shm_size: "256mb"
+    command: >
+      postgres
+        -c shared_buffers=256MB
+        -c effective_cache_size=768MB
+        -c max_connections=200
+        -c log_min_duration_statement=1000
+        -c log_checkpoints=on
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ${POSTGRES_USER} -d webinclusive"]
+      interval: 10s; timeout: 5s; retries: 5; start_period: 10s
+
+  # ── PostgreSQL (DB Whistleblowing — ISOLATO) ──────────────
+  postgres-wb:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       wb_db
+      POSTGRES_USER:     ${WB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${WB_POSTGRES_PASSWORD}
+    volumes:
+      - postgres_wb_data:/var/lib/postgresql/data
+    networks: [wb_network]
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ${WB_POSTGRES_USER} -d wb_db"]
+      interval: 10s; timeout: 5s; retries: 5
+
+  # ── Redis ─────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: >
+      redis-server /etc/redis/redis.conf
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+      - ./infra/redis/redis.conf:/etc/redis/redis.conf:ro
+    networks: [internal]
+    healthcheck:
+      test: ["CMD","redis-cli","--no-auth-warning","-a","${REDIS_PASSWORD}","ping"]
+      interval: 10s; timeout: 3s; retries: 3
+
+  # ── MinIO ─────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD","mc","ready","local"]
+      interval: 30s; timeout: 10s; retries: 3
+
+  # ── Monitoring ────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    networks: [internal]
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_SERVER_ROOT_URL:         https://monitoring.webinclusive.it
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_SECURITY_DISABLE_GRAVATAR: "true"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    networks: [internal, public]
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/webinclusive?sslmode=disable
+    networks: [internal]
+    depends_on: [postgres]
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR:     redis://redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks: [internal]
+
+###############################################################
+networks:
+  public:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true
+  wb_network:
+    driver: bridge
+    internal: true
+
+volumes:
+  postgres_data:
+  postgres_wb_data:
+  redis_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+  nginx_logs:
+  web_dist:

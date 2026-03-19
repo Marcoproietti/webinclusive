@@ -1,0 +1,271 @@
+name: WEB.INCLUSIVE — CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY:   ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '20'
+
+jobs:
+
+  # ─────────────────────────────────────────────────────────
+  # 1. TEST & LINT
+  # ─────────────────────────────────────────────────────────
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB:       webinclusive_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports: ['5432:5432']
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+        ports: ['6379:6379']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install workspace dependencies
+        run: npm ci --workspaces --if-present
+
+      - name: TypeCheck all services
+        run: npm run typecheck --workspaces --if-present
+
+      - name: Lint all services
+        run: npm run lint --workspaces --if-present
+        continue-on-error: true
+
+      - name: Generate Prisma clients
+        run: |
+          for svc in services/*/; do
+            if [ -f "$svc/prisma/schema.prisma" ]; then
+              echo "Generating Prisma for $svc"
+              (cd "$svc" && npx prisma generate) || true
+            fi
+          done
+
+      - name: Run tests
+        run: npm run test --workspaces --if-present
+        env:
+          NODE_ENV:          test
+          DATABASE_URL:      postgresql://postgres:test_password@localhost:5432/webinclusive_test
+          WB_DATABASE_URL:   postgresql://postgres:test_password@localhost:5432/wb_test
+          REDIS_URL:         redis://localhost:6379
+          JWT_ACCESS_SECRET: test-secret-64-chars-not-for-production-use-at-all-here
+          COOKIE_SECRET:     test-cookie-secret-32-chars-here
+          ENCRYPTION_KEY:    0000000000000000000000000000000000000000000000000000000000000000
+          WB_ENCRYPTION_KEY: 1111111111111111111111111111111111111111111111111111111111111111
+          WB_REPORTER_HMAC_KEY: test-hmac-key-32-chars-minimum-ok
+          MINIO_ACCESS_KEY:  minioadmin
+          MINIO_SECRET_KEY:  minioadmin
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # ─────────────────────────────────────────────────────────
+  # 2. SECURITY SCAN
+  # ─────────────────────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --workspaces --if-present
+
+      - name: NPM Audit (HIGH+)
+        run: npm audit --audit-level=high --workspaces
+        continue-on-error: true
+
+      - name: Semgrep SAST
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >
+            p/owasp-top-ten
+            p/nodejs
+            p/jwt
+            p/secrets
+        continue-on-error: true
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          severity:  HIGH,CRITICAL
+          exit-code: '0'
+          format:    sarif
+          output:    trivy-results.sarif
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+  # ─────────────────────────────────────────────────────────
+  # 3. BUILD DOCKER IMAGES
+  # ─────────────────────────────────────────────────────────
+  build:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - gateway
+          - auth-service
+          - scheduling-service
+          - presenze-service
+          - cartella-service
+          - hr-service
+          - notify-service
+          - wb-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest
+            type=semver,pattern={{version}}
+
+      - name: Build and push ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context:    ./services/${{ matrix.service }}
+          push:       true
+          tags:       ${{ steps.meta.outputs.tags }}
+          labels:     ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to:   type=gha,mode=max,scope=${{ matrix.service }}
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            GIT_SHA=${{ github.sha }}
+
+  # ─────────────────────────────────────────────────────────
+  # 4. DEPLOY IN PRODUZIONE
+  # ─────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy Production
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    concurrency:
+      group:             production
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host:     ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key:      ${{ secrets.PROD_SSH_KEY }}
+          timeout:  10m
+          script: |
+            set -e
+            cd /opt/webinclusive
+
+            echo "=== Pulling new images ==="
+            export IMAGE_TAG=${{ github.sha }}
+            docker compose pull
+
+            echo "=== Running DB migrations ==="
+            for svc in auth-service scheduling-service presenze-service cartella-service hr-service wb-service; do
+              echo "Migrating $svc..."
+              docker compose run --rm $svc npx prisma migrate deploy || true
+            done
+
+            echo "=== Rolling update services ==="
+            # Gateway: zero-downtime con scale temporaneo
+            docker compose up -d --no-deps --scale gateway=2 gateway
+            sleep 20
+            docker compose up -d --no-deps --scale gateway=1 gateway
+
+            # Altri servizi
+            docker compose up -d --no-deps \
+              auth-service scheduling-service presenze-service \
+              cartella-service hr-service notify-service wb-service
+
+            echo "=== Verifica health ==="
+            sleep 15
+            for port in 3000 3001 3002 3003 3004 3005 3006 3007; do
+              docker compose exec -T gateway wget -qO- http://localhost:$port/health 2>/dev/null && \
+                echo "Port $port: OK" || echo "Port $port: WARNING"
+            done
+
+            echo "=== Cleanup immagini vecchie ==="
+            docker image prune -f
+
+            echo "=== Deploy completato! SHA: ${{ github.sha }} ==="
+
+      - name: Notify deployment
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅' || '❌' }} Deploy WEB.INCLUSIVE: ${{ job.status }}\nCommit: ${{ github.sha }}\nAuthor: ${{ github.actor }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true

@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEB.INCLUSIVE — Backend Architecture</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #f4f1eb;
+  --bg2: #ece8df;
+  --surface: #ffffff;
+  --surface2: #f9f7f3;
+  --border: #d8d2c4;
+  --border2: #c4bdb0;
+  --ink: #1a1714;
+  --ink2: #4a4540;
+  --ink3: #8a8078;
+  --red: #c0392b;
+  --blue: #1a5276;
+  --green: #1e7a4a;
+  --amber: #b7770d;
+  --purple: #5b2c8d;
+  --teal: #0e6655;
+  --accent: #c0392b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* HEADER */
+header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0 40px;
+  display: flex;
+  align-items: stretch;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  border-bottom: 3px solid var(--red);
+}
+.header-left {
+  padding: 16px 0;
+  border-right: 1px solid #333;
+  padding-right: 28px;
+  margin-right: 28px;
+}
+.header-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--bg);
+}
+.header-sub {
+  font-size: 0.65rem;
+  color: #888;
+  letter-spacing: 0.08em;
+  font-family: 'IBM Plex Mono', monospace;
+  margin-top: 2px;
+}
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+}
+.nav-item {
+  padding: 0 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  color: #888;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.nav-item:hover { color: var(--bg); }
+.nav-item.active { color: var(--red); border-bottom-color: var(--red); }
+
+/* LAYOUT */
+.page { display: none; }
+.page.active { display: block; }
+
+/* OVERVIEW PAGE */
+.arch-container {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 0;
+  min-height: calc(100vh - 60px);
+}
+
+.sidebar {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 32px 24px;
+  border-right: 1px solid #333;
+}
+.sidebar-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.service-list { display: flex; flex-direction: column; gap: 6px; }
+.service-item {
+  background: #1e1b18;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.service-item:hover { border-color: #555; background: #252220; }
+.service-item.active { border-color: var(--red); background: #2a1512; }
+.service-item-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e0dbd5;
+}
+.service-item-port {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  color: #666;
+  margin-top: 2px;
+}
+.service-badge {
+  display: inline-block;
+  font-size: 0.58rem;
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.main-area { padding: 40px; overflow-y: auto; }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.card-header {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.card-body { padding: 20px; }
+
+/* ENDPOINT */
+.endpoint {
+  display: grid;
+  grid-template-columns: 80px 200px 1fr auto;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.endpoint:last-child { border-bottom: none; }
+.endpoint:hover { background: var(--surface2); }
+.endpoint.expanded { background: #fafaf8; }
+
+.method {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+.GET { background: #e8f5e9; color: #1e7a4a; border: 1px solid #a5d6a7; }
+.POST { background: #fff3e0; color: #b7770d; border: 1px solid #ffcc80; }
+.PUT { background: #e3f2fd; color: #1a5276; border: 1px solid #90caf9; }
+.DELETE { background: #fce4ec; color: #c0392b; border: 1px solid #f48fb1; }
+.PATCH { background: #f3e5f5; color: #5b2c8d; border: 1px solid #ce93d8; }
+
+.ep-path {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+.ep-path .param { color: var(--amber); }
+.ep-desc { font-size: 0.76rem; color: var(--ink2); }
+.ep-auth {
+  font-size: 0.62rem;
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.auth-jwt { background: #e8f5e9; color: #1e7a4a; border: 1px solid #a5d6a7; }
+.auth-pub { background: #fce4ec; color: #c0392b; border: 1px solid #f48fb1; }
+.auth-admin { background: #f3e5f5; color: #5b2c8d; border: 1px solid #ce93d8; }
+
+/* EXPANDED DETAIL */
+.ep-detail {
+  display: none;
+  padding: 16px 20px 16px 108px;
+  background: #f8f7f4;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.ep-detail.open { display: block; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.detail-block { }
+.detail-label {
+  font-size: 0.62rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 8px;
+}
+pre.code {
+  background: var(--ink);
+  color: #e0dbd5;
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+.ck { color: #60a5fa; }
+.cs { color: #fbbf24; }
+.cn { color: #34d399; }
+.cc { color: #9ca3af; font-style: italic; }
+
+/* ARCH DIAGRAM */
+.arch-diagram {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+.arch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.arch-box {
+  border: 2px solid;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 120px;
+}
+.arch-arrow {
+  font-size: 1.2rem;
+  color: var(--ink3);
+  flex-shrink: 0;
+}
+.arch-label {
+  font-size: 0.62rem;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  margin-top: 16px;
+}
+.arch-separator {
+  border: none;
+  border-top: 1px dashed var(--border2);
+  margin: 16px 0;
+}
+
+/* FLOW */
+.flow-step {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.step-content { flex: 1; }
+.step-title {
+  font-weight: 600;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+.step-desc { font-size: 0.76rem; color: var(--ink2); }
+.step-code {
+  margin-top: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: var(--ink2);
+}
+
+/* INFO GRID */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+.info-card-label {
+  font-size: 0.62rem;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.info-card-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* FILE TREE */
+.file-tree {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.8;
+  background: var(--ink);
+  color: #e0dbd5;
+  padding: 20px 24px;
+  border-radius: 8px;
+}
+.ft-dir { color: #60a5fa; font-weight: 600; }
+.ft-file { color: #e0dbd5; }
+.ft-comment { color: #555; font-style: italic; }
+.ft-special { color: #fbbf24; }
+.ft-indent1 { padding-left: 20px; }
+.ft-indent2 { padding-left: 40px; }
+.ft-indent3 { padding-left: 60px; }
+
+/* COPY BTN */
+.copy-btn {
+  font-size: 0.65rem;
+  font-family: 'IBM Plex Mono', monospace;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--ink3);
+  padding: 3px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.copy-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* MIDDLEWARE CHAIN */
+.middleware-chain {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.mw-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  position: relative;
+}
+.mw-box:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink3);
+  font-size: 0.8rem;
+  z-index: 1;
+}
+.mw-box:not(:first-child) { margin-left: 16px; }
+
+/* ENV TABLE */
+.env-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+}
+.env-table th {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+.env-table td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  color: var(--ink2);
+}
+.env-table tr:nth-child(even) td { background: var(--surface2); }
+.env-key { color: var(--blue); font-weight: 600; }
+.env-val { color: var(--green); }
+.env-req { color: var(--red); font-size: 0.6rem; font-weight: 700; }
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 32px 0 20px;
+}
+.section-divider-line { flex: 1; height: 1px; background: var(--border); }
+.section-divider-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-title">WEB.INCLUSIVE</div>
+    <div class="header-sub">Backend Architecture v1.0</div>
+  </div>
+  <nav class="header-nav">
+    <div class="nav-item active" onclick="showPage('overview', this)">Overview</div>
+    <div class="nav-item" onclick="showPage('gateway', this)">API Gateway</div>
+    <div class="nav-item" onclick="showPage('auth', this)">Auth Service</div>
+    <div class="nav-item" onclick="showPage('scheduling', this)">Scheduling</div>
+    <div class="nav-item" onclick="showPage('presenze', this)">Presenze</div>
+    <div class="nav-item" onclick="showPage('cartella', this)">Cartella SSE</div>
+    <div class="nav-item" onclick="showPage('struttura', this)">File Structure</div>
+    <div class="nav-item" onclick="showPage('env', this)">Config & ENV</div>
+  </nav>
+</header>
+
+<!-- ============================================================ -->
+<!-- PAGE: OVERVIEW -->
+<!-- ============================================================ -->
+<div class="page active" id="page-overview">
+  <div style="padding:40px;">
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-label">Runtime</div>
+        <div class="info-card-value">Node.js 20 LTS</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">Framework</div>
+        <div class="info-card-value">Fastify 4.x</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">Database</div>
+        <div class="info-card-value">PostgreSQL 15</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">ORM</div>
+        <div class="info-card-value">Prisma 5.x</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">Cache</div>
+        <div class="info-card-value">Redis 7</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">Queue</div>
+        <div class="info-card-value">BullMQ</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">Storage</div>
+        <div class="info-card-value">MinIO / S3</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">Container</div>
+        <div class="info-card-value">Docker + Compose</div>
+      </div>
+    </div>
+
+    <div class="arch-diagram">
+      <div class="arch-label">Layer 1 — Client</div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:#1a5276;color:#1a5276;background:#e3f2fd;">Web App (React)</div>
+        <div class="arch-arrow">|</div>
+        <div class="arch-box" style="border-color:#1e7a4a;color:#1e7a4a;background:#e8f5e9;">App Operatori (Flutter)</div>
+        <div class="arch-arrow">|</div>
+        <div class="arch-box" style="border-color:#b7770d;color:#b7770d;background:#fff8e1;">App Caregiver (Flutter)</div>
+      </div>
+      <hr class="arch-separator">
+      <div class="arch-label">Layer 2 — API Gateway (port 3000)</div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:#c0392b;color:#c0392b;background:#fce4ec;width:100%;text-align:center;">
+          NGINX → Fastify API Gateway<br>
+          <span style="font-size:0.65rem;font-weight:400;">Rate Limiting · JWT Verify · Request Log · CORS · Route Proxy</span>
+        </div>
+      </div>
+      <hr class="arch-separator">
+      <div class="arch-label">Layer 3 — Microservizi (rete interna Docker)</div>
+      <div class="arch-row" style="flex-wrap:wrap;gap:8px;">
+        <div class="arch-box" style="border-color:#1a5276;color:#1a5276;background:#e3f2fd;min-width:100px;">auth-service<br><span style="font-size:0.6rem;">:3001</span></div>
+        <div class="arch-box" style="border-color:#1e7a4a;color:#1e7a4a;background:#e8f5e9;min-width:100px;">scheduling-service<br><span style="font-size:0.6rem;">:3002</span></div>
+        <div class="arch-box" style="border-color:#b7770d;color:#b7770d;background:#fff8e1;min-width:100px;">presenze-service<br><span style="font-size:0.6rem;">:3003</span></div>
+        <div class="arch-box" style="border-color:#c0392b;color:#c0392b;background:#fce4ec;min-width:100px;">cartella-service<br><span style="font-size:0.6rem;">:3004</span></div>
+        <div class="arch-box" style="border-color:#5b2c8d;color:#5b2c8d;background:#f3e5f5;min-width:100px;">hr-service<br><span style="font-size:0.6rem;">:3005</span></div>
+        <div class="arch-box" style="border-color:#0e6655;color:#0e6655;background:#e0f2f1;min-width:100px;">notify-service<br><span style="font-size:0.6rem;">:3006</span></div>
+        <div class="arch-box" style="border-color:#555;color:#555;background:#f5f5f5;min-width:100px;">wb-service<br><span style="font-size:0.6rem;">:3007 ISOLATO</span></div>
+      </div>
+      <hr class="arch-separator">
+      <div class="arch-label">Layer 4 — Data</div>
+      <div class="arch-row" style="flex-wrap:wrap;gap:8px;">
+        <div class="arch-box" style="border-color:#333;color:#333;background:#f5f5f5;">PostgreSQL :5432</div>
+        <div class="arch-box" style="border-color:#c0392b;color:#c0392b;background:#fce4ec;">Redis :6379</div>
+        <div class="arch-box" style="border-color:#1a5276;color:#1a5276;background:#e3f2fd;">MinIO :9000</div>
+        <div class="arch-box" style="border-color:#555;color:#555;background:#f9f9f9;">PostgreSQL WB :5433</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Comunicazione inter-servizi</span>
+      </div>
+      <div class="card-body">
+        <div class="flow-step">
+          <div class="step-num">S</div>
+          <div class="step-content">
+            <div class="step-title">Chiamate sincrone (HTTP interno)</div>
+            <div class="step-desc">Il Gateway inoltra le richieste ai microservizi via HTTP su rete Docker privata. I servizi possono chiamarsi tra loro per operazioni che richiedono risposta immediata (es. scheduling verifica disponibilità operatore su auth-service).</div>
+            <div class="step-code">http://auth-service:3001/internal/users/{id}</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">A</div>
+          <div class="step-content">
+            <div class="step-title">Chiamate asincrone (BullMQ + Redis)</div>
+            <div class="step-desc">Per eventi non bloccanti: invio notifiche push, aggiornamento audit log, sincronizzazione cartella sanitaria dopo check-out operatore.</div>
+            <div class="step-code">Queue: 'notifications' | 'audit' | 'sync-clinical'</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">W</div>
+          <div class="step-content">
+            <div class="step-title">WebSocket (real-time CO)</div>
+            <div class="step-desc">La Centrale Operativa riceve aggiornamenti in tempo reale su check-in/check-out operatori e messaggi. Gestito dal Gateway via @fastify/websocket.</div>
+            <div class="step-code">ws://gateway:3000/ws/co-realtime</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: API GATEWAY -->
+<!-- ============================================================ -->
+<div class="page" id="page-gateway">
+  <div style="padding:40px;">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Middleware Chain — ogni richiesta in ingresso</span>
+      </div>
+      <div class="card-body">
+        <div class="middleware-chain">
+          <div class="mw-box" style="border-left:3px solid #c0392b;">NGINX TLS</div>
+          <div class="mw-box" style="border-left:3px solid #1a5276;">Rate Limit</div>
+          <div class="mw-box" style="border-left:3px solid #1e7a4a;">CORS</div>
+          <div class="mw-box" style="border-left:3px solid #b7770d;">JWT Verify</div>
+          <div class="mw-box" style="border-left:3px solid #5b2c8d;">RBAC Check</div>
+          <div class="mw-box" style="border-left:3px solid #0e6655;">Audit Log</div>
+          <div class="mw-box" style="border-left:3px solid #333;">Proxy →</div>
+        </div>
+        <p style="font-size:0.74rem;color:var(--ink3);margin-top:12px;">Il JWT Verify è bypassato solo per le route pubbliche: <code style="font-family:'IBM Plex Mono',monospace;background:var(--surface2);padding:1px 5px;border-radius:3px;">/auth/login</code>, <code style="font-family:'IBM Plex Mono',monospace;background:var(--surface2);padding:1px 5px;border-radius:3px;">/auth/refresh</code>, <code style="font-family:'IBM Plex Mono',monospace;background:var(--surface2);padding:1px 5px;border-radius:3px;">/wb/submit</code></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">gateway/src/index.js — Bootstrap</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <pre class="code" style="border-radius:0 0 8px 8px;margin:0;"><span class="ck">import</span> Fastify <span class="ck">from</span> <span class="cs">'fastify'</span>
+<span class="ck">import</span> cors <span class="ck">from</span> <span class="cs">'@fastify/cors'</span>
+<span class="ck">import</span> jwt <span class="ck">from</span> <span class="cs">'@fastify/jwt'</span>
+<span class="ck">import</span> rateLimit <span class="ck">from</span> <span class="cs">'@fastify/rate-limit'</span>
+<span class="ck">import</span> websocket <span class="ck">from</span> <span class="cs">'@fastify/websocket'</span>
+<span class="ck">import</span> proxy <span class="ck">from</span> <span class="cs">'@fastify/http-proxy'</span>
+<span class="ck">import</span> { jwtMiddleware } <span class="ck">from</span> <span class="cs">'./middleware/jwt.js'</span>
+<span class="ck">import</span> { rbacMiddleware } <span class="ck">from</span> <span class="cs">'./middleware/rbac.js'</span>
+<span class="ck">import</span> { auditMiddleware } <span class="ck">from</span> <span class="cs">'./middleware/audit.js'</span>
+<span class="ck">import</span> { registerRoutes } <span class="ck">from</span> <span class="cs">'./routes/index.js'</span>
+
+<span class="ck">const</span> app = Fastify({ logger: <span class="cn">true</span>, trustProxy: <span class="cn">true</span> })
+
+<span class="cc">// Plugins</span>
+<span class="ck">await</span> app.register(cors, {
+  origin: process.env.ALLOWED_ORIGINS.split(<span class="cs">','</span>),
+  credentials: <span class="cn">true</span>
+})
+
+<span class="ck">await</span> app.register(rateLimit, {
+  max: <span class="cn">100</span>,
+  timeWindow: <span class="cs">'1 minute'</span>,
+  keyGenerator: (req) => req.headers[<span class="cs">'x-forwarded-for'</span>] || req.ip
+})
+
+<span class="ck">await</span> app.register(jwt, {
+  secret: process.env.JWT_ACCESS_SECRET,
+  sign: { expiresIn: <span class="cs">'15m'</span> }
+})
+
+<span class="ck">await</span> app.register(websocket)
+
+<span class="cc">// Hooks globali</span>
+app.addHook(<span class="cs">'onRequest'</span>, jwtMiddleware)
+app.addHook(<span class="cs">'onRequest'</span>, rbacMiddleware)
+app.addHook(<span class="cs">'onResponse'</span>, auditMiddleware)
+
+<span class="ck">await</span> registerRoutes(app)
+
+<span class="ck">await</span> app.listen({ port: <span class="cn">3000</span>, host: <span class="cs">'0.0.0.0'</span> })
+console.log(<span class="cs">'Gateway running on :3000'</span>)</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">middleware/jwt.js — Verifica token + route pubbliche</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <pre class="code" style="border-radius:0 0 8px 8px;margin:0;"><span class="ck">const</span> PUBLIC_ROUTES = [
+  { method: <span class="cs">'POST'</span>, path: <span class="cs">'/api/v1/auth/login'</span> },
+  { method: <span class="cs">'POST'</span>, path: <span class="cs">'/api/v1/auth/refresh'</span> },
+  { method: <span class="cs">'POST'</span>, path: <span class="cs">'/api/v1/wb/reports'</span> },  <span class="cc">// whistleblowing anonimo</span>
+]
+
+<span class="ck">export async function</span> jwtMiddleware(request, reply) {
+  <span class="ck">const</span> isPublic = PUBLIC_ROUTES.some(r =>
+    r.method === request.method && request.url.startsWith(r.path)
+  )
+  <span class="ck">if</span> (isPublic) <span class="ck">return</span>
+
+  <span class="ck">try</span> {
+    <span class="ck">await</span> request.jwtVerify()
+    <span class="cc">// Payload decodificato disponibile in request.user</span>
+    <span class="cc">// { sub: userId, role: 'operator', iat, exp }</span>
+  } <span class="ck">catch</span> (err) {
+    <span class="ck">return</span> reply.code(<span class="cn">401</span>).send({
+      error: <span class="cs">'UNAUTHORIZED'</span>,
+      message: <span class="cs">'Token non valido o scaduto'</span>
+    })
+  }
+}
+
+<span class="cc">// RBAC: mappa route → ruoli ammessi</span>
+<span class="ck">export const</span> ROUTE_PERMISSIONS = {
+  <span class="cs">'GET /api/v1/beneficiaries'</span>:      [<span class="cs">'admin'</span>, <span class="cs">'coordinator'</span>, <span class="cs">'operator'</span>],
+  <span class="cs">'POST /api/v1/beneficiaries'</span>:     [<span class="cs">'admin'</span>, <span class="cs">'coordinator'</span>],
+  <span class="cs">'GET /api/v1/shifts/mine'</span>:         [<span class="cs">'operator'</span>],
+  <span class="cs">'POST /api/v1/attendance/checkin'</span>: [<span class="cs">'operator'</span>],
+  <span class="cs">'GET /api/v1/clinical/:id'</span>:        [<span class="cs">'admin'</span>, <span class="cs">'coordinator'</span>, <span class="cs">'operator'</span>],
+  <span class="cs">'GET /api/v1/wb/reports'</span>:          [<span class="cs">'admin'</span>, <span class="cs">'auditor'</span>],
+}</pre>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: AUTH SERVICE -->
+<!-- ============================================================ -->
+<div class="page" id="page-auth">
+  <div style="padding:40px;">
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Flusso autenticazione — OAuth2 + JWT dual-token</span></div>
+      <div class="card-body">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Login → POST /api/v1/auth/login</div>
+            <div class="step-desc">Client invia email + password. Il servizio verifica bcrypt hash, controlla is_active, aggiorna last_login_at.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Generazione token doppio</div>
+            <div class="step-desc">
+              <strong>Access Token</strong>: JWT firmato HS256, scadenza 15 minuti, payload: { sub, role, jti }<br>
+              <strong>Refresh Token</strong>: stringa opaca 256-bit, TTL 7 giorni, salvato in Redis con chiave <code>rt:{userId}:{jti}</code>
+            </div>
+            <div class="step-code">
+              access_token  → header Authorization: Bearer &lt;token&gt;<br>
+              refresh_token → cookie HttpOnly, Secure, SameSite=Strict
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Refresh → POST /api/v1/auth/refresh</div>
+            <div class="step-desc">Client invia cookie refresh. Server verifica in Redis, emette nuovo access token, ruota il refresh token (vecchio invalidato).</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Logout → POST /api/v1/auth/logout</div>
+            <div class="step-desc">Cancella la chiave Redis del refresh token. Tutti i device dell'utente vengono scollegati se si usa logout-all.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">MFA (opzionale per admin/coordinator)</div>
+            <div class="step-desc">Dopo login con credenziali corrette, se mfa_secret è presente, il server restituisce uno stato intermedio che richiede TOTP (Google Authenticator / RFC 6238).</div>
+            <div class="step-code">POST /api/v1/auth/mfa/verify  body: { totp_code: "123456" }</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-text">Endpoint Auth Service</div>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">auth-service — API Endpoints</span></div>
+      <div style="padding:0;">
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/auth/login</span>
+          <span class="ep-desc">Login con email e password, restituisce access + refresh token</span>
+          <span class="ep-auth auth-pub">PUBLIC</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block">
+              <div class="detail-label">Request Body</div>
+              <pre class="code">{
+  <span class="ck">"email"</span>:    <span class="cs">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8fe2eefde6e0a1fde0fcfce6cfe0fceea1e6fb">[email&#160;protected]</a>"</span>,
+  <span class="ck">"password"</span>: <span class="cs">"S3cur3Pass!"</span>
+}</pre>
+            </div>
+            <div class="detail-block">
+              <div class="detail-label">Response 200</div>
+              <pre class="code">{
+  <span class="ck">"access_token"</span>: <span class="cs">"eyJhbGci..."</span>,
+  <span class="ck">"token_type"</span>:   <span class="cs">"Bearer"</span>,
+  <span class="ck">"expires_in"</span>:   <span class="cn">900</span>,
+  <span class="ck">"user"</span>: {
+    <span class="ck">"id"</span>:   <span class="cs">"uuid"</span>,
+    <span class="ck">"role"</span>: <span class="cs">"operator"</span>
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/auth/refresh</span>
+          <span class="ep-desc">Rinnova access token tramite refresh cookie</span>
+          <span class="ep-auth auth-pub">PUBLIC</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block">
+              <div class="detail-label">Cookie inviato automaticamente</div>
+              <pre class="code">Cookie: refresh_token=&lt;opaque_token&gt;</pre>
+            </div>
+            <div class="detail-block">
+              <div class="detail-label">Response 200</div>
+              <pre class="code">{
+  <span class="ck">"access_token"</span>: <span class="cs">"eyJhbGci..."</span>,
+  <span class="ck">"expires_in"</span>:   <span class="cn">900</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/auth/logout</span>
+          <span class="ep-desc">Invalida il refresh token corrente in Redis</span>
+          <span class="ep-auth auth-jwt">JWT</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Body</div><pre class="code">{ <span class="ck">"all_devices"</span>: <span class="cn">false</span> }</pre></div>
+            <div class="detail-block"><div class="detail-label">Response</div><pre class="code">{ <span class="ck">"message"</span>: <span class="cs">"Logout effettuato"</span> }</pre></div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/users</span>
+          <span class="ep-desc">Crea nuovo utente (operatore, coordinator, ecc.)</span>
+          <span class="ep-auth auth-admin">ADMIN</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block">
+              <div class="detail-label">Request Body</div>
+              <pre class="code">{
+  <span class="ck">"email"</span>:        <span class="cs">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a9c5dccac887cbc0c8c7cac1c0e9c6dac887c0dd">[email&#160;protected]</a>"</span>,
+  <span class="ck">"role"</span>:         <span class="cs">"operator"</span>,
+  <span class="ck">"temp_password"</span>:<span class="cs">"Temp1234!"</span>,
+  <span class="ck">"operator_data"</span>: {
+    <span class="ck">"badge_number"</span>:   <span class="cs">"OP-2024-042"</span>,
+    <span class="ck">"qualification"</span>:  <span class="cs">"OSS"</span>,
+    <span class="ck">"hire_date"</span>:      <span class="cs">"2024-03-01"</span>
+  }
+}</pre>
+            </div>
+            <div class="detail-block">
+              <div class="detail-label">Response 201</div>
+              <pre class="code">{
+  <span class="ck">"id"</span>:         <span class="cs">"uuid"</span>,
+  <span class="ck">"email"</span>:      <span class="cs">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="107c6573713e7279717e737879507f63713e7964">[email&#160;protected]</a>"</span>,
+  <span class="ck">"role"</span>:       <span class="cs">"operator"</span>,
+  <span class="ck">"created_at"</span>: <span class="cs">"2024-03-18T..."</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method PATCH">PATCH</span>
+          <span class="ep-path">/api/v1/users/<span class="param">{id}</span>/password</span>
+          <span class="ep-desc">Cambio password con verifica vecchia password</span>
+          <span class="ep-auth auth-jwt">JWT</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Body</div>
+              <pre class="code">{
+  <span class="ck">"old_password"</span>: <span class="cs">"vecchia"</span>,
+  <span class="ck">"new_password"</span>: <span class="cs">"Nuova1234!"</span>
+}</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Validazione password</div>
+              <pre class="code"><span class="cc">// Min 8 caratteri</span>
+<span class="cc">// Almeno 1 maiuscola, 1 numero, 1 simbolo</span>
+<span class="cc">// Non uguale alle ultime 5 password</span>
+<span class="cc">// Hash: bcrypt cost factor 12</span></pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: SCHEDULING -->
+<!-- ============================================================ -->
+<div class="page" id="page-scheduling">
+  <div style="padding:40px;">
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">scheduling-service — Tutti gli Endpoint</span></div>
+      <div style="padding:0;">
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method GET">GET</span>
+          <span class="ep-path">/api/v1/care-plans</span>
+          <span class="ep-desc">Lista piani di cura con filtri (beneficiary_id, status, date range)</span>
+          <span class="ep-auth auth-jwt">JWT</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Query Params</div>
+              <pre class="code">?beneficiary_id=uuid
+&status=active
+&from=2024-01-01
+&to=2024-12-31
+&page=1&limit=20</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Response 200</div>
+              <pre class="code">{
+  <span class="ck">"data"</span>: [ { care_plan }, ... ],
+  <span class="ck">"pagination"</span>: {
+    <span class="ck">"page"</span>: <span class="cn">1</span>, <span class="ck">"limit"</span>: <span class="cn">20</span>,
+    <span class="ck">"total"</span>: <span class="cn">142</span>
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/care-plans</span>
+          <span class="ep-desc">Crea nuovo piano di cura per un beneficiario</span>
+          <span class="ep-auth auth-admin">COORD</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Body</div>
+              <pre class="code">{
+  <span class="ck">"beneficiary_id"</span>:    <span class="cs">"uuid"</span>,
+  <span class="ck">"plan_code"</span>:         <span class="cs">"ADI-BASE-2024"</span>,
+  <span class="ck">"asl_authorization"</span>: <span class="cs">"ASL-RM4-00123"</span>,
+  <span class="ck">"start_date"</span>:        <span class="cs">"2024-04-01"</span>,
+  <span class="ck">"weekly_hours"</span>:      <span class="cn">6.5</span>,
+  <span class="ck">"services"</span>: [
+    { <span class="ck">"service_type_id"</span>: <span class="cs">"uuid"</span>,
+      <span class="ck">"frequency"</span>: <span class="cs">"3x_week"</span> }
+  ]
+}</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Logica interna</div>
+              <pre class="code"><span class="cc">// 1. Verifica beneficiario attivo</span>
+<span class="cc">// 2. Verifica no piani sovrapposti</span>
+<span class="cc">// 3. Crea care_plan</span>
+<span class="cc">// 4. Genera appointments iniziali</span>
+<span class="cc">// 5. Emette evento 'plan.created'</span>
+<span class="cc">//    → notify-service invia push</span></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method GET">GET</span>
+          <span class="ep-path">/api/v1/appointments</span>
+          <span class="ep-desc">Calendario appuntamenti con filtri multipli</span>
+          <span class="ep-auth auth-jwt">JWT</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Query Params</div>
+              <pre class="code">?operator_id=uuid  <span class="cc">// oppure "mine"</span>
+&date=2024-04-15   <span class="cc">// giorno specifico</span>
+&week=2024-W15     <span class="cc">// settimana</span>
+&status=scheduled</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Response item</div>
+              <pre class="code">{
+  <span class="ck">"id"</span>:              <span class="cs">"uuid"</span>,
+  <span class="ck">"beneficiary"</span>:    { <span class="ck">"id"</span>, <span class="ck">"full_name"</span>, <span class="ck">"address"</span> },
+  <span class="ck">"service_type"</span>:   { <span class="ck">"code"</span>, <span class="ck">"name"</span> },
+  <span class="ck">"scheduled_start"</span>:<span class="cs">"2024-04-15T09:00:00Z"</span>,
+  <span class="ck">"scheduled_end"</span>:  <span class="cs">"2024-04-15T10:30:00Z"</span>,
+  <span class="ck">"status"</span>:         <span class="cs">"confirmed"</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/appointments/<span class="param">{id}</span>/reassign</span>
+          <span class="ep-desc">Riassegna appuntamento ad altro operatore (es. sostituzione)</span>
+          <span class="ep-auth auth-admin">COORD</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Body</div>
+              <pre class="code">{
+  <span class="ck">"new_operator_id"</span>: <span class="cs">"uuid"</span>,
+  <span class="ck">"reason"</span>:          <span class="cs">"Sostituzione malattia"</span>
+}</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Logica</div>
+              <pre class="code"><span class="cc">// Verifica nuovo operatore:</span>
+<span class="cc">// - qualifica compatibile con service_type</span>
+<span class="cc">// - nessun conflitto di orario</span>
+<span class="cc">// - is_available = true</span>
+<span class="cc">// Notifica push a entrambi gli operatori</span></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method GET">GET</span>
+          <span class="ep-path">/api/v1/shifts/mine</span>
+          <span class="ep-desc">Turni dell'operatore autenticato (usato dall'app mobile)</span>
+          <span class="ep-auth auth-jwt">JWT</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Query</div>
+              <pre class="code">?from=2024-04-01&to=2024-04-30</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Response — ottimizzato per mobile</div>
+              <pre class="code">{
+  <span class="ck">"shifts"</span>: [{
+    <span class="ck">"date"</span>:        <span class="cs">"2024-04-15"</span>,
+    <span class="ck">"start_time"</span>: <span class="cs">"08:00"</span>,
+    <span class="ck">"end_time"</span>:   <span class="cs">"14:00"</span>,
+    <span class="ck">"type"</span>:       <span class="cs">"mattina"</span>,
+    <span class="ck">"appointments_count"</span>: <span class="cn">4</span>
+  }]
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method GET">GET</span>
+          <span class="ep-path">/api/v1/operators/availability</span>
+          <span class="ep-desc">Operatori disponibili per una fascia oraria (uso coordinatore)</span>
+          <span class="ep-auth auth-admin">COORD</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Query</div>
+              <pre class="code">?from=2024-04-15T09:00:00Z
+&to=2024-04-15T11:00:00Z
+&qualification=OSS
+&zone=Roma-Nord</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Response</div>
+              <pre class="code">[{
+  <span class="ck">"operator_id"</span>:   <span class="cs">"uuid"</span>,
+  <span class="ck">"full_name"</span>:     <span class="cs">"Mario Rossi"</span>,
+  <span class="ck">"qualification"</span>: <span class="cs">"OSS"</span>,
+  <span class="ck">"zone"</span>:          <span class="cs">"Roma-Nord"</span>,
+  <span class="ck">"distance_km"</span>:   <span class="cn">2.4</span>
+}]</pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: PRESENZE -->
+<!-- ============================================================ -->
+<div class="page" id="page-presenze">
+  <div style="padding:40px;">
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Meccanismo Proof-of-Presence — Come funziona</span></div>
+      <div class="card-body">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">L'operatore arriva dal beneficiario</div>
+            <div class="step-desc">L'app Flutter acquisisce GPS coordinates, timestamp device, e device_id univoco dell'installazione.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">L'app costruisce il payload firmato</div>
+            <div class="step-code">
+              payload = { appointment_id, operator_id, lat, lng, timestamp }<br>
+              signature = HMAC-SHA256(payload, device_secret)
+            </div>
+            <div class="step-desc" style="margin-top:6px;">Il device_secret viene assegnato al momento dell'onboarding dell'operatore e salvato in modo sicuro nel KeyStore Android / Secure Enclave iOS.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Il server verifica</div>
+            <div class="step-desc">Il presenze-service riceve il payload, ricalcola la firma lato server con il device_secret registrato nel DB, confronta. Se corrispondono: is_verified = true. Verifica anche la coerenza geografica con l'indirizzo del beneficiario (geofence ±200m).</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Fallback offline</div>
+            <div class="step-desc">Se l'operatore è senza connessione, l'app salva il record in SQLite locale e lo sincronizza alla prima connessione disponibile, entro un massimo di 2 ore (configurabile).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">presenze-service — API Endpoints</span></div>
+      <div style="padding:0;">
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/attendance/checkin</span>
+          <span class="ep-desc">Registra entrata operatore presso beneficiario</span>
+          <span class="ep-auth auth-jwt">JWT · OPERATOR</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Body</div>
+              <pre class="code">{
+  <span class="ck">"appointment_id"</span>: <span class="cs">"uuid"</span>,
+  <span class="ck">"lat"</span>:            <span class="cn">41.902782</span>,
+  <span class="ck">"lng"</span>:            <span class="cn">12.496366</span>,
+  <span class="ck">"device_signature"</span>: <span class="cs">"hmac-sha256-hex"</span>,
+  <span class="ck">"client_timestamp"</span>: <span class="cs">"2024-04-15T09:03:42Z"</span>
+}</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Response 201</div>
+              <pre class="code">{
+  <span class="ck">"attendance_id"</span>: <span class="cs">"uuid"</span>,
+  <span class="ck">"check_in_at"</span>:   <span class="cs">"2024-04-15T09:03:42Z"</span>,
+  <span class="ck">"is_verified"</span>:   <span class="cn">true</span>,
+  <span class="ck">"geofence_ok"</span>:   <span class="cn">true</span>,
+  <span class="ck">"distance_m"</span>:    <span class="cn">87</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/attendance/<span class="param">{id}</span>/checkout</span>
+          <span class="ep-desc">Registra uscita operatore, calcola durata effettiva</span>
+          <span class="ep-auth auth-jwt">JWT · OPERATOR</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Body</div>
+              <pre class="code">{
+  <span class="ck">"lat"</span>:             <span class="cn">41.902800</span>,
+  <span class="ck">"lng"</span>:             <span class="cn">12.496380</span>,
+  <span class="ck">"device_signature"</span>:<span class="cs">"hmac-sha256-hex"</span>,
+  <span class="ck">"client_timestamp"</span>:<span class="cs">"2024-04-15T10:28:00Z"</span>
+}</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Post-checkout (async queue)</div>
+              <pre class="code"><span class="cc">// 1. Aggiorna appointment.status = 'completed'</span>
+<span class="cc">// 2. Calcola durata effettiva vs pianificata</span>
+<span class="cc">// 3. Emette 'attendance.completed'</span>
+<span class="cc">// 4. notify-service → push caregiver</span>
+<span class="cc">// 5. Apre finestra per note operatore</span></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/attendance/sync</span>
+          <span class="ep-desc">Sincronizzazione batch record offline (app mobile)</span>
+          <span class="ep-auth auth-jwt">JWT · OPERATOR</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Body</div>
+              <pre class="code">{
+  <span class="ck">"records"</span>: [
+    { <span class="ck">"type"</span>: <span class="cs">"checkin"</span>,
+      <span class="ck">"appointment_id"</span>: <span class="cs">"uuid"</span>,
+      <span class="ck">"lat"</span>: <span class="cn">41.9</span>, <span class="ck">"lng"</span>: <span class="cn">12.4</span>,
+      <span class="ck">"client_timestamp"</span>: <span class="cs">"..."</span>,
+      <span class="ck">"device_signature"</span>: <span class="cs">"..."</span>
+    }
+  ]
+}</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Response</div>
+              <pre class="code">{
+  <span class="ck">"processed"</span>: <span class="cn">3</span>,
+  <span class="ck">"errors"</span>: [
+    { <span class="ck">"index"</span>: <span class="cn">1</span>,
+      <span class="ck">"reason"</span>: <span class="cs">"appointment_not_found"</span> }
+  ]
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method GET">GET</span>
+          <span class="ep-path">/api/v1/attendance/report</span>
+          <span class="ep-desc">Report presenze per periodo (export ASL / fatturazione)</span>
+          <span class="ep-auth auth-admin">COORD · ADMIN</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Query</div>
+              <pre class="code">?from=2024-04-01
+&to=2024-04-30
+&operator_id=uuid  <span class="cc">// opz.</span>
+&format=json|csv</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Campi output</div>
+              <pre class="code"><span class="cc">// operator_name, badge_number</span>
+<span class="cc">// beneficiary_name, fiscal_code</span>
+<span class="cc">// service_code, service_name</span>
+<span class="cc">// check_in_at, check_out_at</span>
+<span class="cc">// duration_minutes (effettivo)</span>
+<span class="cc">// is_verified (firma OK)</span></pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: CARTELLA SSE -->
+<!-- ============================================================ -->
+<div class="page" id="page-cartella">
+  <div style="padding:40px;">
+    <div class="card">
+      <div class="card-header"><span class="card-title">cartella-service — Cartella Socio-Sanitaria Elettronica</span></div>
+      <div style="padding:0;">
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method GET">GET</span>
+          <span class="ep-path">/api/v1/clinical/<span class="param">{beneficiary_id}</span></span>
+          <span class="ep-desc">Recupera cartella sanitaria completa del beneficiario</span>
+          <span class="ep-auth auth-jwt">JWT · LOG OBBLIGATORIO</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Note di sicurezza</div>
+              <pre class="code"><span class="cc">// Ogni accesso genera audit_log</span>
+<span class="cc">// I dati vengono decifrati lato server</span>
+<span class="cc">// Il client riceve solo dati in chiaro</span>
+<span class="cc">// tramite TLS (mai storati in chiaro nel DB)</span>
+<span class="cc">// Response include versione corrente</span></pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Response 200</div>
+              <pre class="code">{
+  <span class="ck">"version"</span>:     <span class="cn">3</span>,
+  <span class="ck">"last_updated"</span>:<span class="cs">"2024-04-10T..."</span>,
+  <span class="ck">"diagnoses"</span>:   [{ <span class="ck">"icd10"</span>:<span class="cs">"I10"</span>, <span class="ck">"desc"</span>:<span class="cs">"..."</span> }],
+  <span class="ck">"medications"</span>: [{ <span class="ck">"name"</span>, <span class="ck">"dosage"</span>, <span class="ck">"frequency"</span> }],
+  <span class="ck">"barthel_score"</span>: <span class="cn">65</span>,
+  <span class="ck">"allergies"</span>:    [<span class="cs">"Penicillina"</span>]
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/clinical/<span class="param">{beneficiary_id}</span>/notes</span>
+          <span class="ep-desc">Aggiunge nota di servizio post-visita (diario dell'operatore)</span>
+          <span class="ep-auth auth-jwt">JWT · OPERATOR</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Body</div>
+              <pre class="code">{
+  <span class="ck">"appointment_id"</span>: <span class="cs">"uuid"</span>,
+  <span class="ck">"note_text"</span>:      <span class="cs">"Paziente collaborante..."</span>,
+  <span class="ck">"vital_signs"</span>: {
+    <span class="ck">"bp_systolic"</span>:  <span class="cn">130</span>,
+    <span class="ck">"bp_diastolic"</span>: <span class="cn">80</span>,
+    <span class="ck">"heart_rate"</span>:   <span class="cn">72</span>,
+    <span class="ck">"temperature"</span>:  <span class="cn">36.5</span>
+  },
+  <span class="ck">"pain_scale"</span>: <span class="cn">2</span>,
+  <span class="ck">"alerts"</span>:     [<span class="cs">"lieve dispnea"</span>]
+}</pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Gestione alert</div>
+              <pre class="code"><span class="cc">// Se alerts non vuoto:</span>
+<span class="cc">// → emit 'clinical.alert'</span>
+<span class="cc">// → notify-service push al coordinator</span>
+<span class="cc">// → audit_log con severity=WARNING</span>
+<span class="cc">// Se pain_scale >= 7:</span>
+<span class="cc">// → push urgente al coordinatore</span></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleDetail(this)">
+          <span class="method POST">POST</span>
+          <span class="ep-path">/api/v1/clinical/<span class="param">{id}</span>/attachments</span>
+          <span class="ep-desc">Upload documento clinico (referto, prescrizione, ecc.)</span>
+          <span class="ep-auth auth-jwt">JWT · COORD</span>
+        </div>
+        <div class="ep-detail">
+          <div class="detail-grid">
+            <div class="detail-block"><div class="detail-label">Multipart Form</div>
+              <pre class="code">file:             &lt;binary&gt;
+attachment_type:  "referto|prescrizione|..."
+description:      "ECG aprile 2024"
+
+<span class="cc">// Max 10MB per file</span>
+<span class="cc">// Tipi ammessi: pdf, jpg, png, dcm</span></pre>
+            </div>
+            <div class="detail-block"><div class="detail-label">Storage pipeline</div>
+              <pre class="code"><span class="cc">// 1. Scan antivirus (ClamAV)</span>
+<span class="cc">// 2. Cifratura AES-256 stream</span>
+<span class="cc">// 3. Upload su MinIO bucket 'clinical'</span>
+<span class="cc">// 4. Salva record in attachments</span>
+<span class="cc">// 5. URL firmato con TTL 1h per download</span></pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: STRUTTURA FILE -->
+<!-- ============================================================ -->
+<div class="page" id="page-struttura">
+  <div style="padding:40px;">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Struttura del progetto — Monorepo</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div class="file-tree">
+<div><span class="ft-dir">webinclusive/</span></div>
+<div class="ft-indent1"><span class="ft-special">docker-compose.yml</span>        <span class="ft-comment">— orchestrazione completa</span></div>
+<div class="ft-indent1"><span class="ft-special">.env.example</span></div>
+<div class="ft-indent1"><span class="ft-dir">packages/</span>                  <span class="ft-comment">— shared libs (monorepo npm workspaces)</span></div>
+<div class="ft-indent2"><span class="ft-dir">shared-types/</span>              <span class="ft-comment">— TypeScript types condivisi</span></div>
+<div class="ft-indent2"><span class="ft-dir">crypto-utils/</span>              <span class="ft-comment">— cifratura AES-256, HMAC helpers</span></div>
+<div class="ft-indent2"><span class="ft-dir">audit-logger/</span>              <span class="ft-comment">— client audit log centralizzato</span></div>
+<div class="ft-indent1"><span class="ft-dir">services/</span></div>
+<div class="ft-indent2"><span class="ft-dir">gateway/</span></div>
+<div class="ft-indent3"><span class="ft-file">src/index.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/middleware/</span>            <span class="ft-comment">jwt.js · rbac.js · audit.js · ratelimit.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/routes/</span>                <span class="ft-comment">index.js — proxy routing table</span></div>
+<div class="ft-indent3"><span class="ft-file">src/ws/</span>                    <span class="ft-comment">co-realtime.js — WebSocket CO</span></div>
+<div class="ft-indent3"><span class="ft-special">Dockerfile</span></div>
+<div class="ft-indent2"><span class="ft-dir">auth-service/</span></div>
+<div class="ft-indent3"><span class="ft-file">src/index.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/routes/</span>                <span class="ft-comment">auth.js · users.js · mfa.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/services/</span>              <span class="ft-comment">token.service.js · password.service.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/db/</span>                    <span class="ft-comment">prisma.js · migrations/</span></div>
+<div class="ft-indent3"><span class="ft-special">Dockerfile</span></div>
+<div class="ft-indent2"><span class="ft-dir">scheduling-service/</span></div>
+<div class="ft-indent3"><span class="ft-file">src/index.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/routes/</span>                <span class="ft-comment">care-plans.js · appointments.js · shifts.js · availability.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/services/</span>              <span class="ft-comment">planner.service.js · conflict-check.service.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/workers/</span>               <span class="ft-comment">appointment-generator.worker.js</span></div>
+<div class="ft-indent3"><span class="ft-special">Dockerfile</span></div>
+<div class="ft-indent2"><span class="ft-dir">presenze-service/</span></div>
+<div class="ft-indent3"><span class="ft-file">src/routes/</span>                <span class="ft-comment">attendance.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/services/</span>              <span class="ft-comment">proof-of-presence.service.js · geofence.service.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/workers/</span>               <span class="ft-comment">post-checkout.worker.js · sync.worker.js</span></div>
+<div class="ft-indent2"><span class="ft-dir">cartella-service/</span></div>
+<div class="ft-indent3"><span class="ft-file">src/routes/</span>                <span class="ft-comment">clinical.js · notes.js · attachments.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/services/</span>              <span class="ft-comment">encryption.service.js · storage.service.js · antivirus.service.js</span></div>
+<div class="ft-indent2"><span class="ft-dir">notify-service/</span></div>
+<div class="ft-indent3"><span class="ft-file">src/workers/</span>               <span class="ft-comment">push.worker.js · email.worker.js</span></div>
+<div class="ft-indent3"><span class="ft-file">src/providers/</span>             <span class="ft-comment">fcm.js (Android) · apns.js (iOS)</span></div>
+<div class="ft-indent2"><span class="ft-dir">hr-service/</span></div>
+<div class="ft-indent2"><span class="ft-dir">wb-service/</span>                <span class="ft-comment">— ISOLATO: proprio DB, propria network Docker</span></div>
+<div class="ft-indent1"><span class="ft-dir">mobile/</span>                    <span class="ft-comment">— Flutter monorepo</span></div>
+<div class="ft-indent2"><span class="ft-dir">app_operators/</span>             <span class="ft-comment">— App operatori ADI</span></div>
+<div class="ft-indent2"><span class="ft-dir">app_caregiver/</span>             <span class="ft-comment">— App familiari</span></div>
+<div class="ft-indent2"><span class="ft-dir">shared/</span>                    <span class="ft-comment">— Widget, modelli, API client condivisi</span></div>
+<div class="ft-indent1"><span class="ft-dir">web/</span>                       <span class="ft-comment">— React app (Vite + TypeScript)</span></div>
+<div class="ft-indent1"><span class="ft-dir">infra/</span></div>
+<div class="ft-indent2"><span class="ft-file">nginx/nginx.conf</span></div>
+<div class="ft-indent2"><span class="ft-file">postgres/init.sql</span></div>
+<div class="ft-indent2"><span class="ft-file">redis/redis.conf</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: CONFIG & ENV -->
+<!-- ============================================================ -->
+<div class="page" id="page-env">
+  <div style="padding:40px;">
+    <div class="card">
+      <div class="card-header"><span class="card-title">.env.example — Variabili di configurazione</span></div>
+      <div class="card-body" style="padding:0;">
+        <table class="env-table">
+          <thead>
+            <tr><th>Variabile</th><th>Esempio / Default</th><th>Note</th><th>Req.</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="4" style="background:var(--surface2);color:var(--ink3);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:8px 12px;">// Database</td></tr>
+            <tr><td class="env-key">DATABASE_URL</td><td class="env-val">postgresql://user:pass@postgres:5432/webinclusive</td><td>DB principale</td><td class="env-req">REQ</td></tr>
+            <tr><td class="env-key">WB_DATABASE_URL</td><td class="env-val">postgresql://wb_user:pass@postgres-wb:5433/wb</td><td>DB whistleblowing isolato</td><td class="env-req">REQ</td></tr>
+            <tr><td class="env-key">REDIS_URL</td><td class="env-val">redis://:password@redis:6379</td><td>Cache e code</td><td class="env-req">REQ</td></tr>
+            <tr><td colspan="4" style="background:var(--surface2);color:var(--ink3);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:8px 12px;">// JWT</td></tr>
+            <tr><td class="env-key">JWT_ACCESS_SECRET</td><td class="env-val">generated-64-byte-hex</td><td>openssl rand -hex 64</td><td class="env-req">REQ</td></tr>
+            <tr><td class="env-key">JWT_REFRESH_TTL_DAYS</td><td class="env-val">7</td><td>Durata refresh token</td><td></td></tr>
+            <tr><td colspan="4" style="background:var(--surface2);color:var(--ink3);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:8px 12px;">// Cifratura dati sanitari</td></tr>
+            <tr><td class="env-key">ENCRYPTION_KEY</td><td class="env-val">generated-32-byte-hex</td><td>AES-256, openssl rand -hex 32</td><td class="env-req">REQ</td></tr>
+            <tr><td class="env-key">ENCRYPTION_IV_LENGTH</td><td class="env-val">16</td><td>IV random per ogni record</td><td></td></tr>
+            <tr><td colspan="4" style="background:var(--surface2);color:var(--ink3);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:8px 12px;">// Storage</td></tr>
+            <tr><td class="env-key">MINIO_ENDPOINT</td><td class="env-val">minio:9000</td><td></td><td class="env-req">REQ</td></tr>
+            <tr><td class="env-key">MINIO_ACCESS_KEY</td><td class="env-val">minioadmin</td><td></td><td class="env-req">REQ</td></tr>
+            <tr><td class="env-key">MINIO_SECRET_KEY</td><td class="env-val">change-in-production</td><td></td><td class="env-req">REQ</td></tr>
+            <tr><td class="env-key">MINIO_BUCKET_CLINICAL</td><td class="env-val">clinical-attachments</td><td>Documenti sanitari</td><td></td></tr>
+            <tr><td colspan="4" style="background:var(--surface2);color:var(--ink3);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:8px 12px;">// Push Notifications</td></tr>
+            <tr><td class="env-key">FCM_SERVER_KEY</td><td class="env-val">your-firebase-server-key</td><td>Android push</td><td class="env-req">REQ</td></tr>
+            <tr><td class="env-key">APNS_KEY_ID</td><td class="env-val">your-apns-key-id</td><td>iOS push</td><td class="env-req">REQ</td></tr>
+            <tr><td colspan="4" style="background:var(--surface2);color:var(--ink3);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:8px 12px;">// Geofence</td></tr>
+            <tr><td class="env-key">GEOFENCE_RADIUS_METERS</td><td class="env-val">200</td><td>Tolleranza check-in</td><td></td></tr>
+            <tr><td class="env-key">OFFLINE_SYNC_MAX_HOURS</td><td class="env-val">2</td><td>Max ritardo sync offline</td><td></td></tr>
+            <tr><td colspan="4" style="background:var(--surface2);color:var(--ink3);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:8px 12px;">// Sicurezza</td></tr>
+            <tr><td class="env-key">ALLOWED_ORIGINS</td><td class="env-val">https://app.webinclusive.it</td><td>CORS whitelist (comma-sep)</td><td class="env-req">REQ</td></tr>
+            <tr><td class="env-key">RATE_LIMIT_MAX</td><td class="env-val">100</td><td>Req/minuto per IP</td><td></td></tr>
+            <tr><td class="env-key">BCRYPT_ROUNDS</td><td class="env-val">12</td><td>Cost factor hash password</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+  document.getElementById('page-' + name).classList.add('active')
+  el.classList.add('active')
+}
+
+function toggleDetail(ep) {
+  const detail = ep.nextElementSibling
+  const isOpen = detail.classList.contains('open')
+  // chiudi tutti
+  document.querySelectorAll('.ep-detail').forEach(d => d.classList.remove('open'))
+  document.querySelectorAll('.endpoint').forEach(e => e.classList.remove('expand

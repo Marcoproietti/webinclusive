@@ -1,0 +1,81 @@
+groups:
+  - name: webinclusive_critical
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "Servizio {{ $labels.job }} non raggiungibile"
+          description: "Il servizio {{ $labels.job }} è down da più di 1 minuto"
+
+      - alert: HighErrorRate
+        expr: |
+          rate(http_requests_total{status=~"5.."}[5m])
+          / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          summary: "Tasso errori 5xx > 5% su {{ $labels.job }}"
+
+      - alert: SlowP95
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket[5m])
+          ) > 2
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "P95 latency > 2s su {{ $labels.job }}"
+
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 30s
+        labels: { severity: critical }
+        annotations:
+          summary: "PostgreSQL non raggiungibile"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 30s
+        labels: { severity: critical }
+        annotations:
+          summary: "Redis non raggiungibile"
+
+      - alert: DiskSpaceLow
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"} /
+           node_filesystem_size_bytes{mountpoint="/"}) < 0.15
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Spazio disco sotto 15%"
+
+      - alert: HighMemoryUsage
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.90
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Utilizzo RAM > 90%"
+
+      - alert: OfflineQueueBacklog
+        expr: wi_offline_queue_size > 100
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Coda offline presenze: {{ $value }} record in attesa"
+
+      - alert: ClinicalAlertUnacknowledged
+        expr: wi_clinical_alerts_pending > 0
+        for: 10m
+        labels: { severity: critical }
+        annotations:
+          summary: "Alert clinici non gestiti da 10 minuti"
+
+      - alert: BackupMissing
+        expr: time() - backup_last_success_timestamp > 90000
+        for: 0m
+        labels: { severity: critical }
+        annotations:
+          summary: "Backup non eseguito nelle ultime 25 ore!"

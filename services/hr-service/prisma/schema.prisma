@@ -1,0 +1,89 @@
+// WEB.INCLUSIVE — HR Service Schema
+
+generator client { provider = "prisma-client-js" }
+datasource db    { provider = "postgresql"; url = env("DATABASE_URL") }
+
+enum TrainingCategory {
+  obbligatoria
+  tecnica
+  soft_skills
+  sicurezza
+  privacy_gdpr
+  qualita
+}
+
+enum DocumentType {
+  procedura
+  istruzione
+  modulo
+  policy
+  piano
+  registro
+}
+
+enum DocumentStatus {
+  draft
+  in_review
+  approved
+  obsolete
+}
+
+model Training {
+  id           String           @id @default(uuid()) @db.Uuid
+  title        String           @db.VarChar(200)
+  category     TrainingCategory
+  provider     String?          @db.VarChar(100)
+  durationHours Decimal         @map("duration_hours") @db.Decimal(5,2)
+  isMandatory  Boolean          @default(false) @map("is_mandatory")
+  expiryMonths Int?             @map("expiry_months") @db.SmallInt
+  description  String?
+  isActive     Boolean          @default(true) @map("is_active")
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  completions OperatorTraining[]
+
+  @@map("trainings")
+  @@schema("hr")
+}
+
+model OperatorTraining {
+  id             String    @id @default(uuid()) @db.Uuid
+  operatorId     String    @map("operator_id") @db.Uuid
+  trainingId     String    @map("training_id") @db.Uuid
+  completedAt    DateTime? @map("completed_at") @db.Date
+  score          Decimal?  @db.Decimal(5,2)
+  passed         Boolean?
+  expiryDate     DateTime? @map("expiry_date") @db.Date
+  certificatePath String?  @map("certificate_path")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  training Training @relation(fields: [trainingId], references: [id])
+
+  @@unique([operatorId, trainingId])
+  @@index([operatorId])
+  @@index([expiryDate])
+  @@map("operator_trainings")
+  @@schema("hr")
+}
+
+model QualityDocument {
+  id            String         @id @default(uuid()) @db.Uuid
+  docCode       String         @unique @map("doc_code") @db.VarChar(30)
+  title         String         @db.VarChar(200)
+  docType       DocumentType   @map("doc_type")
+  version       String         @db.VarChar(10)
+  status        DocumentStatus @default(draft)
+  effectiveDate DateTime       @map("effective_date") @db.Date
+  reviewDate    DateTime       @map("review_date") @db.Date
+  storagePath   String?        @map("storage_path")
+  owner         String         @db.VarChar(100)
+  description   String?
+  createdBy     String         @map("created_by") @db.Uuid
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([docType, status])
+  @@map("quality_documents")
+  @@schema("hr")
+}

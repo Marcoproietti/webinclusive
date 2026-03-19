@@ -1,0 +1,107 @@
+// WEB.INCLUSIVE — Cartella Socio-Sanitaria Elettronica (CSE)
+
+generator client { provider = "prisma-client-js" }
+datasource db    { provider = "postgresql"; url = env("DATABASE_URL") }
+
+enum AttachmentType {
+  referto
+  prescrizione
+  valutazione
+  consenso
+  radiologia
+  ecg
+  altro
+}
+
+// ── Cartella clinica (versionata) ────────────────────────
+model ClinicalRecord {
+  id            String   @id @default(uuid()) @db.Uuid
+  beneficiaryId String   @map("beneficiary_id") @db.Uuid
+  version       Int      @default(1)
+
+  // Tutto cifrato AES-256-GCM lato applicativo
+  diagnoses          String   // JSON cifrato: [{ icd10, description, date }]
+  allergies          String   // JSON cifrato: string[]
+  medications        String   // JSON cifrato: [{ name, dosage, frequency, start, end? }]
+  functionalAssessment String @map("functional_assessment") // JSON cifrato
+  barthelScore       Int?     @map("barthel_score") @db.SmallInt
+  cognitiveScore     Int?     @map("cognitive_score") @db.SmallInt  // MMSE 0-30
+  mobilityLevel      String?  @map("mobility_level") @db.VarChar(20)
+  // autonomo | assistito | dipendente | allettato
+
+  anamnesis          String?  // Testo libero cifrato
+  therapeuticGoals   String?  @map("therapeutic_goals") // JSON cifrato
+
+  createdBy  String   @map("created_by") @db.Uuid
+  updatedBy  String   @map("updated_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([beneficiaryId, version])
+  @@index([beneficiaryId])
+  @@map("clinical_records")
+  @@schema("cartella")
+}
+
+// ── Note di servizio (diario operatore, post-visita) ─────
+model ServiceNote {
+  id            String   @id @default(uuid()) @db.Uuid
+  beneficiaryId String   @map("beneficiary_id") @db.Uuid
+  attendanceId  String   @unique @map("attendance_id") @db.Uuid
+  operatorId    String   @map("operator_id") @db.Uuid
+
+  noteText      String   @map("note_text")     // cifrato
+  vitalSigns    Json?    @map("vital_signs")
+  // { bp_systolic, bp_diastolic, heart_rate, temperature, oxygen_sat, respiratory_rate }
+  painScale     Int?     @map("pain_scale") @db.SmallInt  // 0-10 NRS
+  alerts        String[]
+  mood          String?  @db.VarChar(20)
+  // sereno | agitato | depresso | confuso | collaborante
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([beneficiaryId, createdAt(sort: Desc)])
+  @@index([operatorId])
+  @@map("service_notes")
+  @@schema("cartella")
+}
+
+// ── Allegati clinici (su MinIO, cifrati) ─────────────────
+model Attachment {
+  id            String         @id @default(uuid()) @db.Uuid
+  beneficiaryId String         @map("beneficiary_id") @db.Uuid
+  uploadedBy    String         @map("uploaded_by") @db.Uuid
+  attachmentType AttachmentType @map("attachment_type")
+
+  originalFilename String  @map("original_filename")  // cifrato
+  storagePath      String  @map("storage_path")        // path MinIO cifrato
+  mimeType         String  @map("mime_type") @db.VarChar(100)
+  fileSizeBytes    BigInt  @map("file_size_bytes")
+  checksum         String  @db.VarChar(64)  // SHA-256 del file originale
+
+  description  String?
+  isActive     Boolean  @default(true) @map("is_active")
+  uploadedAt   DateTime @default(now()) @map("uploaded_at") @db.Timestamptz
+
+  @@index([beneficiaryId, attachmentType])
+  @@map("attachments")
+  @@schema("cartella")
+}
+
+// ── Access log (GDPR: ogni accesso alla cartella tracciato) ─
+model AccessLog {
+  id            BigInt   @id @default(autoincrement())
+  beneficiaryId String   @map("beneficiary_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  userRole      String   @map("user_role") @db.VarChar(30)
+  action        String   @db.VarChar(50) // READ | UPDATE | DOWNLOAD | UPLOAD
+  entityType    String   @map("entity_type") @db.VarChar(30) // clinical_record | note | attachment
+  entityId      String?  @map("entity_id") @db.Uuid
+  ipAddress     String?  @map("ip_address")
+  accessedAt    DateTime @default(now()) @map("accessed_at") @db.Timestamptz
+
+  @@index([beneficiaryId, accessedAt(sort: Desc)])
+  @@index([userId, accessedAt(sort: Desc)])
+  @@map("access_logs")
+  @@schema("cartella")
+}

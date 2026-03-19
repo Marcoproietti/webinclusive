@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEB.INCLUSIVE — Flutter App</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2333;
+  --border: #21262d;
+  --border2: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #484f58;
+  --flutter: #54c5f8;
+  --dart: #00b4ab;
+  --green: #3fb950;
+  --amber: #d29922;
+  --red: #f85149;
+  --purple: #bc8cff;
+  --pink: #f778ba;
+  --orange: #ffa657;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* TOPBAR */
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  align-items: stretch;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-brand {
+  padding: 14px 24px 14px 0;
+  border-right: 1px solid var(--border);
+  margin-right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.flutter-logo {
+  width: 22px; height: 22px;
+  background: var(--flutter);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.brand-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+.brand-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text2);
+}
+.topbar-tabs {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  gap: 0;
+}
+.tab {
+  padding: 0 18px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--flutter); border-bottom-color: var(--flutter); }
+
+/* LAYOUT */
+.page { display: none; padding: 36px 40px; }
+.page.active { display: block; }
+
+/* SECTION TITLE */
+.section-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-tag::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* GRID LAYOUTS */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.sidebar-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+
+/* CARDS */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-header {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3);
+}
+.card-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.card-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.06em;
+}
+.card-body { padding: 18px; }
+
+/* CODE BLOCK */
+pre.dart {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 1.75;
+  overflow-x: auto;
+  color: var(--text2);
+  margin: 0;
+}
+.d-kw   { color: #ff7b72; }   /* keyword */
+.d-type { color: var(--flutter); }  /* type */
+.d-fn   { color: #d2a8ff; }   /* function */
+.d-str  { color: #a5d6ff; }   /* string */
+.d-num  { color: var(--orange); }   /* number */
+.d-cm   { color: var(--text3); font-style: italic; } /* comment */
+.d-ann  { color: var(--dart); }    /* annotation */
+.d-cls  { color: #ffa657; }   /* class name */
+
+/* COPY BTN */
+.copy-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.copy-btn:hover { background: var(--flutter); color: var(--bg); border-color: var(--flutter); }
+
+/* FILE TREE */
+.tree {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.73rem;
+  line-height: 1.9;
+  color: var(--text2);
+}
+.tree-dir  { color: var(--flutter); font-weight: 500; }
+.tree-file { color: var(--text); }
+.tree-note { color: var(--text3); font-style: italic; }
+.tree-spec { color: var(--dart); }
+.i1 { padding-left: 18px; }
+.i2 { padding-left: 36px; }
+.i3 { padding-left: 54px; }
+.i4 { padding-left: 72px; }
+
+/* ARCH BOX */
+.layer-block {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+}
+.layer-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.layer-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.layer-item {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  padding: 5px 12px;
+  border-radius: 5px;
+  border: 1px solid;
+}
+.layer-arrow {
+  text-align: center;
+  color: var(--text3);
+  font-size: 1.1rem;
+  margin: 4px 0;
+}
+
+/* SCREEN MOCKUP */
+.screens-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.screen-mock {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.screen-mock:hover {
+  border-color: var(--flutter);
+  transform: translateY(-2px);
+}
+.screen-header {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.screen-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.screen-route {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--text3);
+  margin-top: 2px;
+}
+.screen-body {
+  padding: 10px 12px;
+  min-height: 90px;
+}
+.mock-bar {
+  height: 6px;
+  border-radius: 3px;
+  margin-bottom: 6px;
+}
+.mock-block {
+  height: 30px;
+  border-radius: 5px;
+  margin-bottom: 6px;
+}
+.mock-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.mock-chip {
+  height: 18px;
+  border-radius: 9px;
+  flex: 1;
+}
+.mock-btn {
+  height: 28px;
+  border-radius: 6px;
+  width: 100%;
+  margin-top: 8px;
+}
+.mock-circle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.mock-lines { flex: 1; }
+.mock-line {
+  height: 5px;
+  border-radius: 3px;
+  margin-bottom: 4px;
+}
+
+/* PACKAGE TABLE */
+.pkg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  margin-bottom: 20px;
+}
+.pkg-table th {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.pkg-table td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  color: var(--text2);
+  vertical-align: top;
+}
+.pkg-name { color: var(--flutter); font-weight: 500; }
+.pkg-ver  { color: var(--dart); }
+
+/* FLOW STEP */
+.flow { display: flex; flex-direction: column; gap: 0; }
+.flow-item {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 14px;
+  position: relative;
+}
+.flow-item:not(:last-child) .flow-dot::after {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 36px;
+  bottom: -16px;
+  width: 1px;
+  background: var(--border);
+}
+.flow-dot {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.flow-content {
+  padding-bottom: 24px;
+}
+.flow-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.flow-desc {
+  font-size: 0.76rem;
+  color: var(--text2);
+  font-family: 'Fraunces', serif;
+  line-height: 1.6;
+}
+
+/* TABS INLINE */
+.inline-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.inline-tab {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--text2);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+}
+.inline-tab:hover { color: var(--text); }
+.inline-tab.active { color: var(--flutter); border-bottom-color: var(--flutter); }
+.inline-panel { display: none; padding: 0; }
+.inline-panel.active { display: block; }
+
+/* STATE INDICATOR */
+.state-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin: 2px;
+}
+.state-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="flutter-logo"></div>
+    <div>
+      <div class="brand-text">WEB.INCLUSIVE</div>
+      <div class="brand-sub">Flutter App · v1.0</div>
+    </div>
+  </div>
+  <div class="topbar-tabs">
+    <div class="tab active" onclick="showPage('arch', this)">Architettura</div>
+    <div class="tab" onclick="showPage('struttura', this)">File Structure</div>
+    <div class="tab" onclick="showPage('nav', this)">Navigazione</div>
+    <div class="tab" onclick="showPage('auth', this)">Auth & State</div>
+    <div class="tab" onclick="showPage('presenze', this)">Modulo Presenze</div>
+    <div class="tab" onclick="showPage('offline', this)">Offline Sync</div>
+    <div class="tab" onclick="showPage('turni', this)">Turni & Calendario</div>
+    <div class="tab" onclick="showPage('packages', this)">Packages</div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- ARCHITETTURA -->
+<!-- ======================================================= -->
+<div class="page active" id="page-arch">
+  <div class="section-tag">// Pattern architetturale — Clean Architecture + Riverpod</div>
+
+  <div class="two-col">
+    <div>
+      <div class="layer-block">
+        <div class="layer-label" style="color:var(--flutter);">Presentation Layer</div>
+        <div class="layer-items">
+          <div class="layer-item" style="color:var(--flutter);border-color:var(--flutter);background:rgba(84,197,248,0.08);">Screens (Widgets)</div>
+          <div class="layer-item" style="color:var(--flutter);border-color:var(--flutter);background:rgba(84,197,248,0.08);">Riverpod Providers</div>
+          <div class="layer-item" style="color:var(--flutter);border-color:var(--flutter);background:rgba(84,197,248,0.08);">Router (go_router)</div>
+        </div>
+      </div>
+      <div class="layer-arrow">↕</div>
+      <div class="layer-block">
+        <div class="layer-label" style="color:var(--dart);">Domain Layer</div>
+        <div class="layer-items">
+          <div class="layer-item" style="color:var(--dart);border-color:var(--dart);background:rgba(0,180,171,0.08);">Entities (pure Dart)</div>
+          <div class="layer-item" style="color:var(--dart);border-color:var(--dart);background:rgba(0,180,171,0.08);">Repository Interfaces</div>
+          <div class="layer-item" style="color:var(--dart);border-color:var(--dart);background:rgba(0,180,171,0.08);">Use Cases</div>
+        </div>
+      </div>
+      <div class="layer-arrow">↕</div>
+      <div class="layer-block">
+        <div class="layer-label" style="color:var(--green);">Data Layer</div>
+        <div class="layer-items">
+          <div class="layer-item" style="color:var(--green);border-color:var(--green);background:rgba(63,185,80,0.08);">API Client (Dio)</div>
+          <div class="layer-item" style="color:var(--green);border-color:var(--green);background:rgba(63,185,80,0.08);">Local DB (Drift/SQLite)</div>
+          <div class="layer-item" style="color:var(--green);border-color:var(--green);background:rgba(63,185,80,0.08);">Secure Storage</div>
+          <div class="layer-item" style="color:var(--green);border-color:var(--green);background:rgba(63,185,80,0.08);">Repo Implementations</div>
+        </div>
+      </div>
+      <div class="layer-arrow">↕</div>
+      <div class="layer-block">
+        <div class="layer-label" style="color:var(--amber);">Core / Services</div>
+        <div class="layer-items">
+          <div class="layer-item" style="color:var(--amber);border-color:var(--amber);background:rgba(210,153,34,0.08);">Connectivity</div>
+          <div class="layer-item" style="color:var(--amber);border-color:var(--amber);background:rgba(210,153,34,0.08);">Location (GPS)</div>
+          <div class="layer-item" style="color:var(--amber);border-color:var(--amber);background:rgba(210,153,34,0.08);">Crypto (HMAC)</div>
+          <div class="layer-item" style="color:var(--amber);border-color:var(--amber);background:rgba(210,153,34,0.08);">Push Notifications</div>
+          <div class="layer-item" style="color:var(--amber);border-color:var(--amber);background:rgba(210,153,34,0.08);">Background Sync</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header">
+          <span class="card-title">Gestione stato — Riverpod 2</span>
+          <span class="card-badge" style="background:rgba(84,197,248,0.12);color:var(--flutter);">STATE</span>
+        </div>
+        <div class="card-body" style="font-size:0.78rem;color:var(--text2);line-height:1.7;">
+          <p style="margin-bottom:12px;">Ogni feature ha il proprio set di provider isolati. Il pattern usato è <strong style="color:var(--text);">AsyncNotifier</strong> per operazioni async e <strong style="color:var(--text);">StateNotifier</strong> per stato sincro complesso.</p>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg3);border-radius:5px;font-family:'DM Mono',monospace;font-size:0.7rem;">
+              <span style="color:var(--flutter);">authProvider</span><span style="color:var(--text3);">AuthNotifier extends AsyncNotifier</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg3);border-radius:5px;font-family:'DM Mono',monospace;font-size:0.7rem;">
+              <span style="color:var(--flutter);">shiftsProvider</span><span style="color:var(--text3);">AsyncNotifier&lt;List&lt;Shift&gt;&gt;</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg3);border-radius:5px;font-family:'DM Mono',monospace;font-size:0.7rem;">
+              <span style="color:var(--flutter);">attendanceProvider</span><span style="color:var(--text3);">AttendanceNotifier</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg3);border-radius:5px;font-family:'DM Mono',monospace;font-size:0.7rem;">
+              <span style="color:var(--flutter);">connectivityProvider</span><span style="color:var(--text3);">StreamProvider&lt;ConnStatus&gt;</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg3);border-radius:5px;font-family:'DM Mono',monospace;font-size:0.7rem;">
+              <span style="color:var(--flutter);">offlineQueueProvider</span><span style="color:var(--text3);">StateNotifier&lt;Queue&gt;</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg3);border-radius:5px;font-family:'DM Mono',monospace;font-size:0.7rem;">
+              <span style="color:var(--flutter);">messagesProvider</span><span style="color:var(--text3);">AsyncNotifier&lt;List&lt;Msg&gt;&gt;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Strategia offline-first</span>
+          <span class="card-badge" style="background:rgba(63,185,80,0.12);color:var(--green);">OFFLINE</span>
+        </div>
+        <div class="card-body" style="font-size:0.78rem;color:var(--text2);line-height:1.7;">
+          <p>L'app funziona completamente senza rete. La strategia è <strong style="color:var(--text);">local-first</strong>: ogni dato letto/scritto passa prima dal DB locale (Drift/SQLite), poi sincronizzato in background.</p>
+          <div style="margin-top:12px;font-family:'DM Mono',monospace;font-size:0.68rem;background:var(--bg3);border-radius:6px;padding:12px;border:1px solid var(--border);">
+            Write → Drift (locale) → sync queue<br>
+            Read  → Drift (locale) sempre<br>
+            Sync  → quando connectivity = online<br>
+            Conflict → server wins (last-write-wins)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- FILE STRUCTURE -->
+<!-- ======================================================= -->
+<div class="page" id="page-struttura">
+  <div class="section-tag">// Struttura monorepo Flutter</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">app_operators/ — App Operatori ADI</span>
+        <button class="copy-btn" onclick="copyTree(this)">COPIA</button>
+      </div>
+      <div class="card-body" style="padding:16px 18px;">
+        <div class="tree">
+<div><span class="tree-dir">lib/</span></div>
+<div class="i1"><span class="tree-file">main.dart</span>          <span class="tree-note">— entry point, ProviderScope</span></div>
+<div class="i1"><span class="tree-dir">core/</span></div>
+<div class="i2"><span class="tree-dir">api/</span></div>
+<div class="i3"><span class="tree-file">api_client.dart</span>    <span class="tree-note">— Dio instance, interceptors</span></div>
+<div class="i3"><span class="tree-file">auth_interceptor.dart</span> <span class="tree-note">— JWT refresh automatico</span></div>
+<div class="i2"><span class="tree-dir">database/</span></div>
+<div class="i3"><span class="tree-file">app_database.dart</span>  <span class="tree-note">— Drift DB definition</span></div>
+<div class="i3"><span class="tree-file">tables/</span>            <span class="tree-note">shifts.dart · attendance.dart · messages.dart</span></div>
+<div class="i3"><span class="tree-file">daos/</span>              <span class="tree-note">shifts_dao.dart · attendance_dao.dart</span></div>
+<div class="i2"><span class="tree-dir">services/</span></div>
+<div class="i3"><span class="tree-file">location_service.dart</span>    <span class="tree-note">— geolocator wrapper</span></div>
+<div class="i3"><span class="tree-file">crypto_service.dart</span>      <span class="tree-note">— HMAC-SHA256 firma presenze</span></div>
+<div class="i3"><span class="tree-file">connectivity_service.dart</span> <span class="tree-note">— stream online/offline</span></div>
+<div class="i3"><span class="tree-file">push_service.dart</span>        <span class="tree-note">— FCM handler</span></div>
+<div class="i3"><span class="tree-file">sync_service.dart</span>        <span class="tree-note">— background sync worker</span></div>
+<div class="i3"><span class="tree-file">secure_storage.dart</span>      <span class="tree-note">— flutter_secure_storage wrapper</span></div>
+<div class="i2"><span class="tree-dir">router/</span></div>
+<div class="i3"><span class="tree-file">app_router.dart</span>    <span class="tree-note">— go_router configuration</span></div>
+<div class="i3"><span class="tree-file">guards.dart</span>        <span class="tree-note">— auth redirect guards</span></div>
+<div class="i2"><span class="tree-dir">theme/</span></div>
+<div class="i3"><span class="tree-file">app_theme.dart</span>     <span class="tree-note">— ThemeData, colori, typography</span></div>
+<div class="i1"><span class="tree-dir">features/</span></div>
+<div class="i2"><span class="tree-dir">auth/</span></div>
+<div class="i3"><span class="tree-file">domain/</span>            <span class="tree-note">auth_repository.dart · user_entity.dart</span></div>
+<div class="i3"><span class="tree-file">data/</span>              <span class="tree-note">auth_repository_impl.dart</span></div>
+<div class="i3"><span class="tree-file">presentation/</span>      <span class="tree-note">login_screen.dart · auth_provider.dart</span></div>
+<div class="i2"><span class="tree-dir">shifts/</span></div>
+<div class="i3"><span class="tree-file">domain/</span>            <span class="tree-note">shift_entity.dart · shifts_repository.dart</span></div>
+<div class="i3"><span class="tree-file">data/</span>              <span class="tree-note">shifts_repository_impl.dart</span></div>
+<div class="i3"><span class="tree-file">presentation/</span>      <span class="tree-note">shifts_screen.dart · shift_card.dart · shifts_provider.dart</span></div>
+<div class="i2"><span class="tree-dir">attendance/</span></div>
+<div class="i3"><span class="tree-file">domain/</span>            <span class="tree-note">attendance_entity.dart · attendance_repository.dart</span></div>
+<div class="i3"><span class="tree-file">data/</span>              <span class="tree-note">attendance_repository_impl.dart</span></div>
+<div class="i3"><span class="tree-file">presentation/</span>      <span class="tree-note">checkin_screen.dart · checkout_screen.dart · attendance_provider.dart</span></div>
+<div class="i2"><span class="tree-dir">clinical_notes/</span></div>
+<div class="i3"><span class="tree-file">presentation/</span>      <span class="tree-note">note_form_screen.dart · vitals_widget.dart</span></div>
+<div class="i2"><span class="tree-dir">messages/</span></div>
+<div class="i3"><span class="tree-file">presentation/</span>      <span class="tree-note">chat_screen.dart · message_bubble.dart · messages_provider.dart</span></div>
+<div class="i2"><span class="tree-dir">profile/</span></div>
+<div class="i3"><span class="tree-file">presentation/</span>      <span class="tree-note">profile_screen.dart · settings_screen.dart</span></div>
+<div class="i1"><span class="tree-file">pubspec.yaml</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">app_caregiver/ — App Familiari</span>
+      </div>
+      <div class="card-body" style="padding:16px 18px;">
+        <div class="tree">
+<div><span class="tree-dir">lib/</span></div>
+<div class="i1"><span class="tree-file">main.dart</span></div>
+<div class="i1"><span class="tree-dir">core/</span>           <span class="tree-note">— condiviso da shared/</span></div>
+<div class="i1"><span class="tree-dir">features/</span></div>
+<div class="i2"><span class="tree-dir">auth/</span>           <span class="tree-note">— login caregiver</span></div>
+<div class="i2"><span class="tree-dir">monitoring/</span></div>
+<div class="i3"><span class="tree-file">dashboard_screen.dart</span>    <span class="tree-note">— stato servizio oggi</span></div>
+<div class="i3"><span class="tree-file">operator_location_map.dart</span> <span class="tree-note">— mappa in tempo reale</span></div>
+<div class="i3"><span class="tree-file">service_history_screen.dart</span></div>
+<div class="i2"><span class="tree-dir">messages/</span></div>
+<div class="i3"><span class="tree-file">chat_co_screen.dart</span>  <span class="tree-note">— chat con CO</span></div>
+<div class="i2"><span class="tree-dir">notifications/</span></div>
+<div class="i3"><span class="tree-file">notification_list.dart</span></div>
+</div>
+
+        <div style="margin-top:20px;">
+          <div class="tree">
+<div><span class="tree-dir">shared/</span>          <span class="tree-note">— package condiviso tra le 2 app</span></div>
+<div class="i1"><span class="tree-dir">lib/</span></div>
+<div class="i2"><span class="tree-dir">models/</span>       <span class="tree-note">— entities JSON-serializable</span></div>
+<div class="i2"><span class="tree-dir">widgets/</span>      <span class="tree-note">— componenti UI riutilizzabili</span></div>
+<div class="i3"><span class="tree-file">wi_app_bar.dart</span></div>
+<div class="i3"><span class="tree-file">wi_status_badge.dart</span></div>
+<div class="i3"><span class="tree-file">wi_empty_state.dart</span></div>
+<div class="i3"><span class="tree-file">wi_offline_banner.dart</span></div>
+<div class="i2"><span class="tree-dir">api/</span>          <span class="tree-note">— Dio client condiviso</span></div>
+<div class="i2"><span class="tree-dir">theme/</span>        <span class="tree-note">— design system condiviso</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- NAVIGAZIONE -->
+<!-- ======================================================= -->
+<div class="page" id="page-nav">
+  <div class="section-tag">// Routing — go_router 13 con guards</div>
+
+  <div class="screens-grid">
+    <div class="screen-mock">
+      <div class="screen-header"><div class="screen-name">LoginScreen</div><div class="screen-route">/login</div></div>
+      <div class="screen-body">
+        <div class="mock-bar" style="background:var(--flutter);opacity:0.3;width:60%;"></div>
+        <div class="mock-block" style="background:var(--bg2);border:1px solid var(--border);margin-top:10px;"></div>
+        <div class="mock-block" style="background:var(--bg2);border:1px solid var(--border);"></div>
+        <div class="mock-btn" style="background:var(--flutter);opacity:0.7;"></div>
+      </div>
+    </div>
+    <div class="screen-mock">
+      <div class="screen-header"><div class="screen-name">HomeScreen</div><div class="screen-route">/home</div></div>
+      <div class="screen-body">
+        <div class="mock-block" style="background:var(--flutter);opacity:0.2;height:50px;"></div>
+        <div class="mock-row" style="margin-top:6px;">
+          <div class="mock-chip" style="background:var(--bg2);border:1px solid var(--border);"></div>
+          <div class="mock-chip" style="background:var(--bg2);border:1px solid var(--border);"></div>
+        </div>
+        <div class="mock-block" style="background:var(--bg2);border:1px solid var(--border);height:20px;"></div>
+      </div>
+    </div>
+    <div class="screen-mock">
+      <div class="screen-header"><div class="screen-name">ShiftsScreen</div><div class="screen-route">/shifts</div></div>
+      <div class="screen-body">
+        <div class="mock-row">
+          <div class="mock-chip" style="background:var(--flutter);opacity:0.3;max-width:40px;flex:none;"></div>
+          <div class="mock-chip" style="background:var(--bg2);border:1px solid var(--border);max-width:40px;flex:none;"></div>
+          <div class="mock-chip" style="background:var(--bg2);border:1px solid var(--border);max-width:40px;flex:none;"></div>
+        </div>
+        <div class="mock-block" style="background:var(--bg2);border:1px solid var(--border);margin-top:6px;height:22px;"></div>
+        <div class="mock-block" style="background:var(--bg2);border:1px solid var(--border);height:22px;"></div>
+        <div class="mock-block" style="background:var(--bg2);border:1px solid var(--border);height:22px;"></div>
+      </div>
+    </div>
+    <div class="screen-mock">
+      <div class="screen-header"><div class="screen-name">CheckInScreen</div><div class="screen-route">/attendance/checkin</div></div>
+      <div class="screen-body">
+        <div class="mock-circle" style="background:var(--green);opacity:0.3;margin:0 auto;width:50px;height:50px;border-radius:50%;"></div>
+        <div class="mock-bar" style="background:var(--green);opacity:0.4;width:80%;margin:10px auto 4px;"></div>
+        <div class="mock-bar" style="background:var(--text3);width:60%;margin:0 auto;"></div>
+        <div class="mock-btn" style="background:var(--green);opacity:0.6;margin-top:10px;"></div>
+      </div>
+    </div>
+    <div class="screen-mock">
+      <div class="screen-header"><div class="screen-name">NoteScreen</div><div class="screen-route">/attendance/:id/note</div></div>
+      <div class="screen-body">
+        <div class="mock-block" style="background:var(--bg2);border:1px solid var(--border);height:50px;"></div>
+        <div class="mock-row" style="margin-top:4px;">
+          <div class="mock-chip" style="background:var(--bg2);border:1px solid var(--border);"></div>
+          <div class="mock-chip" style="background:var(--bg2);border:1px solid var(--border);"></div>
+          <div class="mock-chip" style="background:var(--bg2);border:1px solid var(--border);"></div>
+        </div>
+        <div class="mock-btn" style="background:var(--flutter);opacity:0.5;margin-top:6px;"></div>
+      </div>
+    </div>
+    <div class="screen-mock">
+      <div class="screen-header"><div class="screen-name">ChatScreen</div><div class="screen-route">/messages</div></div>
+      <div class="screen-body">
+        <div class="mock-row"><div class="mock-circle" style="background:var(--text3);width:24px;height:24px;"></div><div class="mock-lines"><div class="mock-line" style="background:var(--bg2);border:1px solid var(--border);width:70%;"></div><div class="mock-line" style="background:var(--bg2);border:1px solid var(--border);width:50%;"></div></div></div>
+        <div class="mock-block" style="background:var(--flutter);opacity:0.2;height:18px;margin-left:40px;"></div>
+        <div class="mock-row" style="margin-top:6px;"><div class="mock-circle" style="background:var(--text3);width:24px;height:24px;"></div><div class="mock-lines"><div class="mock-line" style="background:var(--bg2);border:1px solid var(--border);width:80%;"></div></div></div>
+      </div>
+    </div>
+    <div class="screen-mock">
+      <div class="screen-header"><div class="screen-name">ProfileScreen</div><div class="screen-route">/profile</div></div>
+      <div class="screen-body">
+        <div class="mock-circle" style="background:var(--flutter);opacity:0.3;margin:0 auto;width:40px;height:40px;border-radius:50%;"></div>
+        <div class="mock-bar" style="background:var(--text3);width:60%;margin:8px auto 4px;"></div>
+        <div class="mock-bar" style="background:var(--text3);width:40%;margin:0 auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">core/router/app_router.dart</span>
+      <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+    </div>
+    <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;"><span class="d-kw">import</span> <span class="d-str">'package:go_router/go_router.dart'</span>;
+<span class="d-kw">import</span> <span class="d-str">'package:flutter_riverpod/flutter_riverpod.dart'</span>;
+
+<span class="d-kw">final</span> routerProvider = Provider&lt;<span class="d-cls">GoRouter</span>&gt;((ref) {
+  <span class="d-kw">final</span> authState = ref.watch(authProvider);
+
+  <span class="d-kw">return</span> <span class="d-cls">GoRouter</span>(
+    initialLocation: <span class="d-str">'/home'</span>,
+    redirect: (context, state) {
+      <span class="d-kw">final</span> isLoggedIn = authState.valueOrNull != <span class="d-kw">null</span>;
+      <span class="d-kw">final</span> isLoginRoute = state.matchedLocation == <span class="d-str">'/login'</span>;
+
+      <span class="d-kw">if</span> (!isLoggedIn && !isLoginRoute) <span class="d-kw">return</span> <span class="d-str">'/login'</span>;
+      <span class="d-kw">if</span> (isLoggedIn && isLoginRoute)  <span class="d-kw">return</span> <span class="d-str">'/home'</span>;
+      <span class="d-kw">return null</span>;
+    },
+    routes: [
+      <span class="d-cls">GoRoute</span>(
+        path: <span class="d-str">'/login'</span>,
+        builder: (ctx, state) => <span class="d-kw">const</span> <span class="d-cls">LoginScreen</span>(),
+      ),
+      <span class="d-cls">ShellRoute</span>(
+        <span class="d-cm">// Bottom nav shell — Home, Turni, Messaggi, Profilo</span>
+        builder: (ctx, state, child) => <span class="d-cls">MainShell</span>(child: child),
+        routes: [
+          <span class="d-cls">GoRoute</span>(
+            path: <span class="d-str">'/home'</span>,
+            builder: (ctx, s) => <span class="d-kw">const</span> <span class="d-cls">HomeScreen</span>(),
+          ),
+          <span class="d-cls">GoRoute</span>(
+            path: <span class="d-str">'/shifts'</span>,
+            builder: (ctx, s) => <span class="d-kw">const</span> <span class="d-cls">ShiftsScreen</span>(),
+            routes: [
+              <span class="d-cls">GoRoute</span>(
+                path: <span class="d-str">'appointments/:appointmentId'</span>,
+                builder: (ctx, s) => <span class="d-cls">AppointmentDetailScreen</span>(
+                  id: s.pathParameters[<span class="d-str">'appointmentId'</span>]!,
+                ),
+                routes: [
+                  <span class="d-cls">GoRoute</span>(
+                    path: <span class="d-str">'checkin'</span>,
+                    builder: (ctx, s) => <span class="d-cls">CheckInScreen</span>(
+                      appointmentId: s.pathParameters[<span class="d-str">'appointmentId'</span>]!,
+                    ),
+                  ),
+                  <span class="d-cls">GoRoute</span>(
+                    path: <span class="d-str">'checkout'</span>,
+                    builder: (ctx, s) => <span class="d-cls">CheckOutScreen</span>(
+                      attendanceId: s.uri.queryParameters[<span class="d-str">'attendanceId'</span>]!,
+                    ),
+                  ),
+                  <span class="d-cls">GoRoute</span>(
+                    path: <span class="d-str">'note'</span>,
+                    builder: (ctx, s) => <span class="d-cls">ClinicalNoteScreen</span>(
+                      appointmentId: s.pathParameters[<span class="d-str">'appointmentId'</span>]!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          <span class="d-cls">GoRoute</span>(
+            path: <span class="d-str">'/messages'</span>,
+            builder: (ctx, s) => <span class="d-kw">const</span> <span class="d-cls">ChatScreen</span>(),
+          ),
+          <span class="d-cls">GoRoute</span>(
+            path: <span class="d-str">'/profile'</span>,
+            builder: (ctx, s) => <span class="d-kw">const</span> <span class="d-cls">ProfileScreen</span>(),
+          ),
+        ],
+      ),
+    ],
+  );
+});</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- AUTH & STATE -->
+<!-- ======================================================= -->
+<div class="page" id="page-auth">
+  <div class="section-tag">// Autenticazione — JWT + secure storage + auto-refresh</div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">features/auth/data/auth_repository_impl.dart</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+      </div>
+      <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;"><span class="d-kw">class</span> <span class="d-cls">AuthRepositoryImpl</span> <span class="d-kw">implements</span> <span class="d-cls">AuthRepository</span> {
+  <span class="d-kw">final</span> <span class="d-cls">ApiClient</span> _api;
+  <span class="d-kw">final</span> <span class="d-cls">SecureStorage</span> _storage;
+
+  <span class="d-kw">const</span> <span class="d-cls">AuthRepositoryImpl</span>(<span class="d-kw">this</span>._api, <span class="d-kw">this</span>._storage);
+
+  <span class="d-ann">@override</span>
+  <span class="d-kw">Future</span>&lt;<span class="d-cls">AuthResult</span>&gt; login(<span class="d-cls">String</span> email, <span class="d-cls">String</span> password) <span class="d-kw">async</span> {
+    <span class="d-kw">final</span> res = <span class="d-kw">await</span> _api.dio.post(
+      <span class="d-str">'/auth/login'</span>,
+      data: {<span class="d-str">'email'</span>: email, <span class="d-str">'password'</span>: password},
+    );
+    <span class="d-kw">final</span> result = <span class="d-cls">AuthResult</span>.fromJson(res.data);
+
+    <span class="d-cm">// Salva token in flutter_secure_storage</span>
+    <span class="d-kw">await</span> _storage.setAccessToken(result.accessToken);
+    <span class="d-kw">await</span> _storage.setUser(result.user);
+
+    <span class="d-kw">return</span> result;
+  }
+
+  <span class="d-ann">@override</span>
+  <span class="d-kw">Future</span>&lt;<span class="d-kw">void</span>&gt; logout() <span class="d-kw">async</span> {
+    <span class="d-kw">try</span> {
+      <span class="d-kw">await</span> _api.dio.post(<span class="d-str">'/auth/logout'</span>);
+    } <span class="d-kw">finally</span> {
+      <span class="d-kw">await</span> _storage.clearAll();
+    }
+  }
+
+  <span class="d-ann">@override</span>
+  <span class="d-kw">Future</span>&lt;<span class="d-cls">UserEntity</span>?&gt; getCurrentUser() <span class="d-kw">async</span> {
+    <span class="d-kw">return</span> _storage.getUser();
+  }
+}</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">core/api/auth_interceptor.dart — Auto-refresh JWT</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+      </div>
+      <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;"><span class="d-cm">/// Intercetta automaticamente 401 e rinnova il token</span>
+<span class="d-kw">class</span> <span class="d-cls">AuthInterceptor</span> <span class="d-kw">extends</span> <span class="d-cls">Interceptor</span> {
+  <span class="d-kw">final</span> <span class="d-cls">SecureStorage</span> _storage;
+  <span class="d-kw">final</span> <span class="d-cls">Dio</span> _dio;
+  <span class="d-kw">bool</span> _isRefreshing = <span class="d-kw">false</span>;
+
+  <span class="d-cls">AuthInterceptor</span>(<span class="d-kw">this</span>._storage, <span class="d-kw">this</span>._dio);
+
+  <span class="d-ann">@override</span>
+  <span class="d-kw">void</span> onRequest(<span class="d-cls">RequestOptions</span> options,
+                 <span class="d-cls">RequestInterceptorHandler</span> handler) <span class="d-kw">async</span> {
+    <span class="d-kw">final</span> token = <span class="d-kw">await</span> _storage.getAccessToken();
+    <span class="d-kw">if</span> (token != <span class="d-kw">null</span>) {
+      options.headers[<span class="d-str">'Authorization'</span>] = <span class="d-str">'Bearer <span class="d-num">$token</span>'</span>;
+    }
+    handler.next(options);
+  }
+
+  <span class="d-ann">@override</span>
+  <span class="d-kw">void</span> onError(<span class="d-cls">DioException</span> err,
+               <span class="d-cls">ErrorInterceptorHandler</span> handler) <span class="d-kw">async</span> {
+    <span class="d-kw">if</span> (err.response?.statusCode == <span class="d-num">401</span> && !_isRefreshing) {
+      _isRefreshing = <span class="d-kw">true</span>;
+      <span class="d-kw">try</span> {
+        <span class="d-cm">// Prova a fare refresh (cookie inviato automaticamente)</span>
+        <span class="d-kw">final</span> res = <span class="d-kw">await</span> _dio.post(<span class="d-str">'/auth/refresh'</span>);
+        <span class="d-kw">final</span> newToken = res.data[<span class="d-str">'access_token'</span>];
+        <span class="d-kw">await</span> _storage.setAccessToken(newToken);
+
+        <span class="d-cm">// Ripete la richiesta originale con nuovo token</span>
+        err.requestOptions.headers[<span class="d-str">'Authorization'</span>] =
+            <span class="d-str">'Bearer <span class="d-num">$newToken</span>'</span>;
+        <span class="d-kw">final</span> retryRes = <span class="d-kw">await</span> _dio.fetch(err.requestOptions);
+        handler.resolve(retryRes);
+      } <span class="d-kw">catch</span> (_) {
+        <span class="d-cm">// Refresh fallito → logout</span>
+        <span class="d-kw">await</span> _storage.clearAll();
+        handler.reject(err);
+      } <span class="d-kw">finally</span> {
+        _isRefreshing = <span class="d-kw">false</span>;
+      }
+    } <span class="d-kw">else</span> {
+      handler.next(err);
+    }
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- MODULO PRESENZE -->
+<!-- ======================================================= -->
+<div class="page" id="page-presenze">
+  <div class="section-tag">// Modulo Presenze — Check-in/out con firma crittografica</div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <span class="card-title">core/services/crypto_service.dart — Proof of Presence HMAC</span>
+      <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+    </div>
+    <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;"><span class="d-kw">import</span> <span class="d-str">'dart:convert'</span>;
+<span class="d-kw">import</span> <span class="d-str">'package:crypto/crypto.dart'</span>;
+
+<span class="d-kw">class</span> <span class="d-cls">CryptoService</span> {
+  <span class="d-kw">final</span> <span class="d-cls">SecureStorage</span> _storage;
+  <span class="d-cls">CryptoService</span>(<span class="d-kw">this</span>._storage);
+
+  <span class="d-cm">/// Genera firma HMAC-SHA256 per check-in/out</span>
+  <span class="d-cm">/// Il device_secret è salvato nel Keystore Android / Secure Enclave iOS</span>
+  <span class="d-kw">Future</span>&lt;<span class="d-cls">String</span>&gt; signPresence({
+    <span class="d-kw">required</span> <span class="d-cls">String</span> appointmentId,
+    <span class="d-kw">required</span> <span class="d-cls">String</span> operatorId,
+    <span class="d-kw">required</span> <span class="d-cls">double</span> lat,
+    <span class="d-kw">required</span> <span class="d-cls">double</span> lng,
+    <span class="d-kw">required</span> <span class="d-cls">DateTime</span> timestamp,
+  }) <span class="d-kw">async</span> {
+    <span class="d-kw">final</span> deviceSecret = <span class="d-kw">await</span> _storage.getDeviceSecret();
+    <span class="d-kw">if</span> (deviceSecret == <span class="d-kw">null</span>) {
+      <span class="d-kw">throw</span> <span class="d-cls">Exception</span>(<span class="d-str">'Device non registrato: manca device_secret'</span>);
+    }
+
+    <span class="d-cm">// Payload deterministico: ordinamento fisso dei campi</span>
+    <span class="d-kw">final</span> payload = [
+      appointmentId,
+      operatorId,
+      lat.toStringAsFixed(<span class="d-num">6</span>),
+      lng.toStringAsFixed(<span class="d-num">6</span>),
+      timestamp.toUtc().toIso8601String(),
+    ].join(<span class="d-str">'|'</span>);
+
+    <span class="d-kw">final</span> key  = utf8.encode(deviceSecret);
+    <span class="d-kw">final</span> msg  = utf8.encode(payload);
+    <span class="d-kw">final</span> hmac = <span class="d-cls">Hmac</span>(<span class="d-cls">sha256</span>, key);
+    <span class="d-kw">return</span> hmac.convert(msg).toString();
+  }
+
+  <span class="d-cm">/// Registra il device secret al primo login (ricevuto dall'onboarding API)</span>
+  <span class="d-kw">Future</span>&lt;<span class="d-kw">void</span>&gt; registerDevice(<span class="d-cls">String</span> secret) <span class="d-kw">async</span> {
+    <span class="d-kw">await</span> _storage.setDeviceSecret(secret);
+  }
+}</pre>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">features/attendance/presentation/attendance_provider.dart</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+      </div>
+      <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;font-size:0.68rem;"><span class="d-kw">class</span> <span class="d-cls">AttendanceNotifier</span>
+    <span class="d-kw">extends</span> <span class="d-cls">AutoDisposeAsyncNotifier</span>&lt;<span class="d-cls">AttendanceState</span>&gt; {
+
+  <span class="d-ann">@override</span>
+  <span class="d-kw">Future</span>&lt;<span class="d-cls">AttendanceState</span>&gt; build() <span class="d-kw">async</span> {
+    <span class="d-kw">return const</span> <span class="d-cls">AttendanceState</span>.idle();
+  }
+
+  <span class="d-kw">Future</span>&lt;<span class="d-kw">void</span>&gt; checkIn(<span class="d-cls">String</span> appointmentId) <span class="d-kw">async</span> {
+    state = <span class="d-kw">const</span> <span class="d-cls">AsyncLoading</span>();
+
+    <span class="d-kw">try</span> {
+      <span class="d-cm">// 1. Acquisisci posizione GPS</span>
+      <span class="d-kw">final</span> loc = <span class="d-kw">await</span> ref.read(locationServiceProvider).getCurrentPosition();
+
+      <span class="d-cm">// 2. Costruisci firma HMAC</span>
+      <span class="d-kw">final</span> now = <span class="d-cls">DateTime</span>.now().toUtc();
+      <span class="d-kw">final</span> user = ref.read(authProvider).valueOrNull!;
+      <span class="d-kw">final</span> sig = <span class="d-kw">await</span> ref.read(cryptoServiceProvider).signPresence(
+        appointmentId: appointmentId,
+        operatorId: user.id,
+        lat: loc.latitude, lng: loc.longitude,
+        timestamp: now,
+      );
+
+      <span class="d-cm">// 3. Tenta invio online</span>
+      <span class="d-kw">final</span> isOnline = ref.read(connectivityProvider).valueOrNull
+                      == <span class="d-cls">ConnStatus</span>.online;
+
+      <span class="d-kw">if</span> (isOnline) {
+        <span class="d-kw">final</span> result = <span class="d-kw">await</span> ref.read(attendanceRepoProvider)
+          .checkIn(<span class="d-cls">CheckInRequest</span>(
+            appointmentId: appointmentId,
+            lat: loc.latitude, lng: loc.longitude,
+            signature: sig,
+            clientTimestamp: now,
+          ));
+        state = <span class="d-cls">AsyncData</span>(<span class="d-cls">AttendanceState</span>.checkedIn(result));
+      } <span class="d-kw">else</span> {
+        <span class="d-cm">// 4. Offline: accoda in SQLite</span>
+        <span class="d-kw">await</span> ref.read(offlineQueueProvider.notifier).enqueue(
+          <span class="d-cls">OfflineRecord</span>.checkIn(
+            appointmentId: appointmentId,
+            lat: loc.latitude, lng: loc.longitude,
+            signature: sig, timestamp: now,
+          ),
+        );
+        state = <span class="d-cls">AsyncData</span>(<span class="d-cls">AttendanceState</span>.offlineQueued());
+      }
+    } <span class="d-kw">catch</span> (e, st) {
+      state = <span class="d-cls">AsyncError</span>(e, st);
+    }
+  }
+
+  <span class="d-kw">Future</span>&lt;<span class="d-kw">void</span>&gt; checkOut(<span class="d-cls">String</span> attendanceId) <span class="d-kw">async</span> {
+    <span class="d-cm">// logica analoga al checkIn</span>
+  }
+}
+
+<span class="d-kw">final</span> attendanceProvider =
+  AsyncNotifierProvider.autoDispose&lt;<span class="d-cls">AttendanceNotifier</span>, <span class="d-cls">AttendanceState</span>&gt;(
+    <span class="d-cls">AttendanceNotifier</span>.new
+  );</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">features/attendance/presentation/checkin_screen.dart</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+      </div>
+      <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;font-size:0.68rem;"><span class="d-kw">class</span> <span class="d-cls">CheckInScreen</span> <span class="d-kw">extends</span> <span class="d-cls">ConsumerWidget</span> {
+  <span class="d-kw">final</span> <span class="d-cls">String</span> appointmentId;
+  <span class="d-kw">const</span> <span class="d-cls">CheckInScreen</span>({<span class="d-kw">required this</span>.appointmentId, <span class="d-kw">super</span>.key});
+
+  <span class="d-ann">@override</span>
+  <span class="d-cls">Widget</span> build(<span class="d-cls">BuildContext</span> context, <span class="d-cls">WidgetRef</span> ref) {
+    <span class="d-kw">final</span> state = ref.watch(attendanceProvider);
+    <span class="d-kw">final</span> isOnline = ref.watch(connectivityProvider).valueOrNull
+                     == <span class="d-cls">ConnStatus</span>.online;
+
+    <span class="d-kw">return</span> <span class="d-cls">Scaffold</span>(
+      appBar: <span class="d-cls">WiAppBar</span>(title: <span class="d-str">'Check-In'</span>),
+      body: <span class="d-cls">Padding</span>(
+        padding: <span class="d-kw">const</span> <span class="d-cls">EdgeInsets</span>.all(<span class="d-num">24</span>),
+        child: <span class="d-cls">Column</span>(children: [
+          <span class="d-cm">// Banner offline visibile se senza rete</span>
+          <span class="d-kw">if</span> (!isOnline) <span class="d-kw">const</span> <span class="d-cls">WiOfflineBanner</span>(),
+
+          <span class="d-kw">const</span> <span class="d-cls">Spacer</span>(),
+
+          <span class="d-cm">// Pulsante principale con stato</span>
+          state.when(
+            loading: () => <span class="d-kw">const</span> <span class="d-cls">CircularProgressIndicator</span>(),
+            error: (e, _) => <span class="d-cls">WiErrorWidget</span>(error: e),
+            data: (s) => s.map(
+              idle: (_) => <span class="d-cls">_CheckInButton</span>(
+                onTap: () => ref.read(attendanceProvider.notifier)
+                              .checkIn(appointmentId),
+              ),
+              checkedIn: (_) => <span class="d-cls">_SuccessBadge</span>(online: <span class="d-kw">true</span>),
+              offlineQueued: (_) => <span class="d-cls">_SuccessBadge</span>(online: <span class="d-kw">false</span>),
+            ),
+          ),
+          <span class="d-kw">const</span> <span class="d-cls">Spacer</span>(),
+        ]),
+      ),
+    );
+  }
+}
+
+<span class="d-cm">/// Badge risultato: online (verificato) o offline (accodato)</span>
+<span class="d-kw">class</span> <span class="d-cls">_SuccessBadge</span> <span class="d-kw">extends</span> <span class="d-cls">StatelessWidget</span> {
+  <span class="d-kw">final bool</span> online;
+  <span class="d-kw">const</span> <span class="d-cls">_SuccessBadge</span>({<span class="d-kw">required this</span>.online});
+
+  <span class="d-ann">@override</span>
+  <span class="d-cls">Widget</span> build(<span class="d-cls">BuildContext</span> ctx) => <span class="d-cls">Column</span>(
+    mainAxisSize: <span class="d-cls">MainAxisSize</span>.min,
+    children: [
+      <span class="d-cls">Icon</span>(online ? <span class="d-cls">Icons</span>.verified : <span class="d-cls">Icons</span>.cloud_off,
+           color: online ? <span class="d-cls">Colors</span>.green : <span class="d-cls">Colors</span>.orange,
+           size: <span class="d-num">64</span>),
+      <span class="d-cls">Text</span>(online ? <span class="d-str">'Presenza registrata ✓'</span>
+                 : <span class="d-str">'Salvato offline — sync in corso'</span>),
+    ],
+  );
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- OFFLINE SYNC -->
+<!-- ======================================================= -->
+<div class="page" id="page-offline">
+  <div class="section-tag">// Offline-first — Drift DB + BG Sync</div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <span class="card-title">core/database/app_database.dart — Schema Drift locale</span>
+      <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+    </div>
+    <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;"><span class="d-kw">import</span> <span class="d-str">'package:drift/drift.dart'</span>;
+<span class="d-kw">import</span> <span class="d-str">'package:drift_flutter/drift_flutter.dart'</span>;
+
+<span class="d-cm">// ── Tabelle locali ────────────────────────────────────────</span>
+
+<span class="d-kw">class</span> <span class="d-cls">ShiftsTable</span> <span class="d-kw">extends</span> <span class="d-cls">Table</span> {
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> id          => text()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> operatorId  => text()();
+  <span class="d-cls">DateTimeColumn</span> <span class="d-kw">get</span> shiftDate => dateTime()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> startTime  => text()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> endTime    => text()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> shiftType  => text()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> status     => text()();
+  <span class="d-cls">DateTimeColumn</span> <span class="d-kw">get</span> syncedAt => dateTime().nullable()();
+  <span class="d-ann">@override</span> <span class="d-cls">Set</span>&lt;<span class="d-cls">Column</span>&gt; <span class="d-kw">get</span> primaryKey => {id};
+}
+
+<span class="d-kw">class</span> <span class="d-cls">AttendanceTable</span> <span class="d-kw">extends</span> <span class="d-cls">Table</span> {
+  <span class="d-cls">IntColumn</span>   <span class="d-kw">get</span> localId       => integer().autoIncrement()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> remoteId      => text().nullable()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> appointmentId => text()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> operatorId    => text()();
+  <span class="d-cls">RealColumn</span>  <span class="d-kw">get</span> checkInLat    => real()();
+  <span class="d-cls">RealColumn</span>  <span class="d-kw">get</span> checkInLng    => real()();
+  <span class="d-cls">DateTimeColumn</span> <span class="d-kw">get</span> checkInAt  => dateTime()();
+  <span class="d-cls">RealColumn</span>  <span class="d-kw">get</span> checkOutLat   => real().nullable()();
+  <span class="d-cls">RealColumn</span>  <span class="d-kw">get</span> checkOutLng   => real().nullable()();
+  <span class="d-cls">DateTimeColumn</span> <span class="d-kw">get</span> checkOutAt => dateTime().nullable()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> signature     => text()();
+  <span class="d-cls">BoolColumn</span>  <span class="d-kw">get</span> synced        => boolean().withDefault(<span class="d-kw">const</span> <span class="d-cls">Constant</span>(<span class="d-kw">false</span>))();
+}
+
+<span class="d-cm">// Coda offline per record da sincronizzare</span>
+<span class="d-kw">class</span> <span class="d-cls">SyncQueueTable</span> <span class="d-kw">extends</span> <span class="d-cls">Table</span> {
+  <span class="d-cls">IntColumn</span>   <span class="d-kw">get</span> id          => integer().autoIncrement()();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> type        => text()(); <span class="d-cm">// 'checkin' | 'checkout'</span>
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> payload     => text()(); <span class="d-cm">// JSON serializzato</span>
+  <span class="d-cls">DateTimeColumn</span> <span class="d-kw">get</span> createdAt => dateTime()();
+  <span class="d-cls">IntColumn</span>   <span class="d-kw">get</span> attempts    => integer().withDefault(<span class="d-kw">const</span> <span class="d-cls">Constant</span>(<span class="d-num">0</span>))();
+  <span class="d-cls">TextColumn</span>  <span class="d-kw">get</span> lastError   => text().nullable()();
+}
+
+<span class="d-ann">@DriftDatabase</span>(tables: [<span class="d-cls">ShiftsTable</span>, <span class="d-cls">AttendanceTable</span>, <span class="d-cls">SyncQueueTable</span>])
+<span class="d-kw">class</span> <span class="d-cls">AppDatabase</span> <span class="d-kw">extends</span> <span class="d-cls">_$AppDatabase</span> {
+  <span class="d-cls">AppDatabase</span>() : <span class="d-kw">super</span>(driftDatabase(name: <span class="d-str">'webinclusive_local'</span>));
+
+  <span class="d-ann">@override</span> <span class="d-kw">int get</span> schemaVersion => <span class="d-num">1</span>;
+}</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">core/services/sync_service.dart — Background Sync Worker</span>
+      <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+    </div>
+    <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;"><span class="d-kw">import</span> <span class="d-str">'package:workmanager/workmanager.dart'</span>;
+
+<span class="d-cm">// Callback eseguita da Workmanager in background</span>
+<span class="d-ann">@pragma</span>(<span class="d-str">'vm:entry-point'</span>)
+<span class="d-kw">void</span> callbackDispatcher() {
+  <span class="d-cls">Workmanager</span>().executeTask((task, data) <span class="d-kw">async</span> {
+    <span class="d-kw">if</span> (task == <span class="d-str">'syncOfflineQueue'</span>) {
+      <span class="d-kw">await</span> <span class="d-cls">SyncService</span>.runSync();
+    }
+    <span class="d-kw">return</span> <span class="d-cls">Future</span>.value(<span class="d-kw">true</span>);
+  });
+}
+
+<span class="d-kw">class</span> <span class="d-cls">SyncService</span> {
+  <span class="d-cm">/// Registra task periodico (ogni 15 min, min Android consentito)</span>
+  <span class="d-kw">static</span> <span class="d-kw">Future</span>&lt;<span class="d-kw">void</span>&gt; initialize() <span class="d-kw">async</span> {
+    <span class="d-kw">await</span> <span class="d-cls">Workmanager</span>().initialize(callbackDispatcher);
+    <span class="d-kw">await</span> <span class="d-cls">Workmanager</span>().registerPeriodicTask(
+      <span class="d-str">'sync-offline-queue'</span>,
+      <span class="d-str">'syncOfflineQueue'</span>,
+      frequency: <span class="d-kw">const</span> <span class="d-cls">Duration</span>(minutes: <span class="d-num">15</span>),
+      constraints: <span class="d-cls">Constraints</span>(
+        networkType: <span class="d-cls">NetworkType</span>.connected,
+      ),
+    );
+  }
+
+  <span class="d-cm">/// Logica di sync effettiva (chiamata anche in foreground al ripristino rete)</span>
+  <span class="d-kw">static</span> <span class="d-kw">Future</span>&lt;<span class="d-kw">void</span>&gt; runSync() <span class="d-kw">async</span> {
+    <span class="d-kw">final</span> db  = <span class="d-cls">AppDatabase</span>();
+    <span class="d-kw">final</span> api = <span class="d-cls">ApiClient</span>();
+
+    <span class="d-cm">// Recupera tutti i record non sincronizzati, ordinati per createdAt</span>
+    <span class="d-kw">final</span> pending = <span class="d-kw">await</span> db.syncQueueDao.getPending(limit: <span class="d-num">50</span>);
+    <span class="d-kw">if</span> (pending.isEmpty) <span class="d-kw">return</span>;
+
+    <span class="d-cm">// Invia in batch all'endpoint /attendance/sync</span>
+    <span class="d-kw">try</span> {
+      <span class="d-kw">final</span> res = <span class="d-kw">await</span> api.dio.post(<span class="d-str">'/attendance/sync'</span>, data: {
+        <span class="d-str">'records'</span>: pending.map((r) => r.payloadJson).toList(),
+      });
+
+      <span class="d-kw">final</span> processed = res.data[<span class="d-str">'processed'</span>] <span class="d-kw">as int</span>;
+      <span class="d-kw">final</span> errors    = res.data[<span class="d-str">'errors'</span>] <span class="d-kw">as</span> <span class="d-cls">List</span>;
+
+      <span class="d-cm">// Marca come sincronizzati i record OK</span>
+      <span class="d-kw">final</span> errorIndices = errors.map((e) => e[<span class="d-str">'index'</span>] <span class="d-kw">as int</span>).toSet();
+      <span class="d-kw">for</span> (<span class="d-kw">var</span> i = <span class="d-num">0</span>; i &lt; pending.length; i++) {
+        <span class="d-kw">if</span> (!errorIndices.contains(i)) {
+          <span class="d-kw">await</span> db.syncQueueDao.markSynced(pending[i].id);
+        } <span class="d-kw">else</span> {
+          <span class="d-kw">await</span> db.syncQueueDao.incrementAttempts(pending[i].id,
+            error: errors.firstWhere((e) => e[<span class="d-str">'index'</span>] == i)[<span class="d-str">'reason'</span>],
+          );
+        }
+      }
+    } <span class="d-kw">catch</span> (e) {
+      <span class="d-cm">// Fallimento rete: riproverà al prossimo ciclo</span>
+    }
+  }
+
+  <span class="d-cm">/// Triggera sync immediata quando la rete torna online</span>
+  <span class="d-kw">static</span> <span class="d-kw">void</span> triggerOnConnectivity(<span class="d-cls">WidgetRef</span> ref) {
+    ref.listen(connectivityProvider, (prev, next) {
+      <span class="d-kw">if</span> (next.valueOrNull == <span class="d-cls">ConnStatus</span>.online &&
+          prev?.valueOrNull == <span class="d-cls">ConnStatus</span>.offline) {
+        runSync(); <span class="d-cm">// fire and forget</span>
+      }
+    });
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- TURNI & CALENDARIO -->
+<!-- ======================================================= -->
+<div class="page" id="page-turni">
+  <div class="section-tag">// Modulo Turni — Calendar UI + provider</div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">features/shifts/presentation/shifts_provider.dart</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+      </div>
+      <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;font-size:0.69rem;"><span class="d-cm">/// Provider famiglia per turni e appuntamenti del giorno</span>
+
+<span class="d-cm">// Data selezionata nel calendario</span>
+<span class="d-kw">final</span> selectedDateProvider =
+  <span class="d-cls">StateProvider</span>&lt;<span class="d-cls">DateTime</span>&gt;((_) => <span class="d-cls">DateTime</span>.now());
+
+<span class="d-cm">// Turni del mese corrente (cached localmente)</span>
+<span class="d-kw">final</span> shiftsProvider = <span class="d-cls">AsyncNotifierProvider</span>
+  .autoDispose&lt;<span class="d-cls">ShiftsNotifier</span>, <span class="d-cls">List</span>&lt;<span class="d-cls">Shift</span>&gt;&gt;(
+    <span class="d-cls">ShiftsNotifier</span>.new,
+  );
+
+<span class="d-kw">class</span> <span class="d-cls">ShiftsNotifier</span>
+    <span class="d-kw">extends</span> <span class="d-cls">AutoDisposeAsyncNotifier</span>&lt;<span class="d-cls">List</span>&lt;<span class="d-cls">Shift</span>&gt;&gt; {
+
+  <span class="d-ann">@override</span>
+  <span class="d-kw">Future</span>&lt;<span class="d-cls">List</span>&lt;<span class="d-cls">Shift</span>&gt;&gt; build() <span class="d-kw">async</span> {
+    <span class="d-cm">// Prima legge dal DB locale (immediato)</span>
+    <span class="d-kw">final</span> cached = <span class="d-kw">await</span> ref.read(appDatabaseProvider)
+                      .shiftsDao.getThisMonth();
+
+    <span class="d-cm">// Poi aggiorna in background dal server</span>
+    _fetchFromServer();
+
+    <span class="d-kw">return</span> cached.map(<span class="d-cls">Shift</span>.fromLocal).toList();
+  }
+
+  <span class="d-kw">Future</span>&lt;<span class="d-kw">void</span>&gt; _fetchFromServer() <span class="d-kw">async</span> {
+    <span class="d-kw">final</span> now = <span class="d-cls">DateTime</span>.now();
+    <span class="d-kw">try</span> {
+      <span class="d-kw">final</span> remote = <span class="d-kw">await</span> ref.read(shiftsRepoProvider)
+        .getShifts(from: <span class="d-cls">DateTime</span>(now.year, now.month, <span class="d-num">1</span>),
+                   to:   <span class="d-cls">DateTime</span>(now.year, now.month + <span class="d-num">1</span>, <span class="d-num">0</span>));
+
+      <span class="d-cm">// Aggiorna DB locale</span>
+      <span class="d-kw">await</span> ref.read(appDatabaseProvider).shiftsDao.upsertAll(remote);
+      state = <span class="d-cls">AsyncData</span>(remote);
+    } <span class="d-kw">catch</span> (_) {
+      <span class="d-cm">// Rete non disponibile: mantieni dati locali</span>
+    }
+  }
+}
+
+<span class="d-cm">// Appuntamenti del giorno selezionato (derivato)</span>
+<span class="d-kw">final</span> appointmentsForDayProvider =
+  <span class="d-cls">FutureProvider</span>.autoDispose&lt;<span class="d-cls">List</span>&lt;<span class="d-cls">Appointment</span>&gt;&gt;((ref) {
+    <span class="d-kw">final</span> date = ref.watch(selectedDateProvider);
+    <span class="d-kw">return</span> ref.read(schedulingRepoProvider).getAppointmentsForDay(date);
+  });</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">features/shifts/presentation/shifts_screen.dart</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+      </div>
+      <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;font-size:0.69rem;"><span class="d-kw">class</span> <span class="d-cls">ShiftsScreen</span> <span class="d-kw">extends</span> <span class="d-cls">ConsumerWidget</span> {
+  <span class="d-kw">const</span> <span class="d-cls">ShiftsScreen</span>({<span class="d-kw">super</span>.key});
+
+  <span class="d-ann">@override</span>
+  <span class="d-cls">Widget</span> build(<span class="d-cls">BuildContext</span> context, <span class="d-cls">WidgetRef</span> ref) {
+    <span class="d-kw">final</span> selected     = ref.watch(selectedDateProvider);
+    <span class="d-kw">final</span> shiftsAsync  = ref.watch(shiftsProvider);
+    <span class="d-kw">final</span> apptAsync    = ref.watch(appointmentsForDayProvider);
+
+    <span class="d-kw">return</span> <span class="d-cls">Scaffold</span>(
+      appBar: <span class="d-cls">WiAppBar</span>(title: <span class="d-str">'I miei turni'</span>),
+      body: <span class="d-cls">Column</span>(children: [
+
+        <span class="d-cm">// Calendario orizzontale (TableCalendar o custom)</span>
+        shiftsAsync.when(
+          loading: () => <span class="d-kw">const</span> <span class="d-cls">ShimmerCalendar</span>(),
+          error: (e, _) => <span class="d-cls">WiErrorBanner</span>(error: e),
+          data: (shifts) => <span class="d-cls">WiWeekCalendar</span>(
+            shifts: shifts,
+            selectedDay: selected,
+            onDaySelected: (day) =>
+              ref.read(selectedDateProvider.notifier).state = day,
+          ),
+        ),
+
+        <span class="d-kw">const</span> <span class="d-cls">Divider</span>(),
+
+        <span class="d-cm">// Lista appuntamenti del giorno</span>
+        <span class="d-cls">Expanded</span>(
+          child: apptAsync.when(
+            loading: () => <span class="d-kw">const</span> <span class="d-cls">ShimmerList</span>(),
+            error: (e, _) => <span class="d-cls">WiErrorWidget</span>(error: e),
+            data: (appts) => appts.isEmpty
+              ? <span class="d-kw">const</span> <span class="d-cls">WiEmptyState</span>(
+                  icon: <span class="d-cls">Icons</span>.event_available,
+                  message: <span class="d-str">'Nessun appuntamento oggi'</span>,
+                )
+              : <span class="d-cls">ListView</span>.separated(
+                  padding: <span class="d-kw">const</span> <span class="d-cls">EdgeInsets</span>.all(<span class="d-num">16</span>),
+                  itemCount: appts.length,
+                  separatorBuilder: (_, __) =>
+                    <span class="d-kw">const</span> <span class="d-cls">SizedBox</span>(height: <span class="d-num">10</span>),
+                  itemBuilder: (ctx, i) => <span class="d-cls">AppointmentCard</span>(
+                    appointment: appts[i],
+                    onTap: () => context.go(
+                      <span class="d-str">'/shifts/appointments/<span class="d-num">${appts[i].id}</span>'</span>
+                    ),
+                  ),
+                ),
+          ),
+        ),
+      ]),
+    );
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- PACKAGES -->
+<!-- ======================================================= -->
+<div class="page" id="page-packages">
+  <div class="section-tag">// pubspec.yaml — Dipendenze complete</div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <span class="card-title">pubspec.yaml — app_operators</span>
+      <button class="copy-btn" onclick="copyCode(this)">COPIA</button>
+    </div>
+    <div style="padding:0;">
+<pre class="dart" style="border-radius:0 0 10px 10px;">name: app_operators
+description: WEB.INCLUSIVE — App Operatori ADI
+publish_to: <span class="d-str">'none'</span>
+version: 1.0.0+1
+
+environment:
+  sdk: <span class="d-str">'^3.3.0'</span>
+  flutter: <span class="d-str">'^3.19.0'</span>
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  <span class="d-cm"># --- Routing ---</span>
+  go_router: ^13.2.0
+
+  <span class="d-cm"># --- State management ---</span>
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  <span class="d-cm"># --- Network ---</span>
+  dio: ^5.4.3
+  pretty_dio_logger: ^1.3.1
+
+  <span class="d-cm"># --- Database locale (Drift/SQLite) ---</span>
+  drift: ^2.19.1
+  drift_flutter: ^0.2.0
+  sqlite3_flutter_libs: ^0.5.23
+
+  <span class="d-cm"># --- Sicurezza ---</span>
+  flutter_secure_storage: ^9.0.0
+  crypto: ^3.0.3            <span class="d-cm"># HMAC-SHA256</span>
+  local_auth: ^2.2.0        <span class="d-cm"># biometrics unlock</span>
+
+  <span class="d-cm"># --- Geolocalizzazione ---</span>
+  geolocator: ^12.0.0
+  permission_handler: ^11.3.1
+
+  <span class="d-cm"># --- Notifiche push ---</span>
+  firebase_messaging: ^15.0.3
+  flutter_local_notifications: ^17.1.2
+
+  <span class="d-cm"># --- Background sync ---</span>
+  workmanager: ^0.5.2
+  connectivity_plus: ^6.0.3
+
+  <span class="d-cm"># --- UI components ---</span>
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  table_calendar: ^3.1.2    <span class="d-cm"># calendario turni</span>
+  fl_chart: ^0.68.0         <span class="d-cm"># grafici presenze</span>
+  lottie: ^3.1.2             <span class="d-cm"># animazioni feedback</span>
+
+  <span class="d-cm"># --- Serializzazione ---</span>
+  json_annotation: ^4.9.0
+  freezed_annotation: ^2.4.1
+
+  <span class="d-cm"># --- Utils ---</span>
+  intl: ^0.19.0
+  logger: ^2.4.0
+  uuid: ^4.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  riverpod_generator: ^2.4.0
+  build_runner: ^2.4.10
+  drift_dev: ^2.19.1
+  freezed: ^2.5.3
+  json_serializable: ^6.8.0
+  flutter_lints: ^4.0.0
+  mocktail: ^1.0.3</pre>
+    </div>
+  </div>
+
+  <table class="pkg-table">
+    <thead>
+      <tr><th>Package</th><th>Versione</th><th>Scopo</th><th>Perché questo</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="pkg-name">flutter_riverpod</td><td class="pkg-ver">^2.5.1</td><td>State management</td><td>Compile-safe, testabile, nessun boilerplate Provider</td></tr>
+      <tr><td class="pkg-name">go_router</td><td class="pkg-ver">^13.2.0</td><td>Navigazione</td><td>Deep link, guard, ShellRoute per bottom nav</td></tr>
+      <tr><td class="pkg-name">dio</td><td class="pkg-ver">^5.4.3</td><td>HTTP client</td><td>Interceptors per JWT refresh automatico</td></tr>
+      <tr><td class="pkg-name">drift</td><td class="pkg-ver">^2.19.1</td><td>DB locale SQLite</td><td>Type-safe queries, migrations, reactive streams</td></tr>
+      <tr><td class="pkg-name">flutter_secure_storage</td><td class="pkg-ver">^9.0.0</td><td>Token storage</td><td>Android Keystore + iOS Keychain — niente SharedPrefs</td></tr>
+      <tr><td class="pkg-name">crypto</td><td class="pkg-ver">^3.0.3</td><td>HMAC-SHA256</td><td>Firma proof-of-presence senza dipendenze native</td></tr>
+      <tr><td class="pkg-name">geolocator</td><td class="pkg-ver">^12.0.0</td><td>GPS</td><td>Accuratezza alta, gestione permessi integrata</td></tr>
+      <tr><td class="pkg-name">workmanager</td><td class="pkg-ver">^0.5.2</td><td>Background task</td><td>Sync offline garantita anche con app chiusa</td></tr>
+      <tr><td class="pkg-name">connectivity_plus</td><td class="pkg-ver">^6.0.3</td><td>Stato rete</td><td>Trigger sync al ripristino connessione</td></tr>
+      <tr><td class="pkg-name">firebase_messaging</td><td class="pkg-ver">^15.0.3</td><td>Push Android/iOS</td><td>FCM unico SDK per entrambe le piattaforme</td></tr>
+      <tr><td class="pkg-name">freezed</td><td class="pkg-ver">^2.5.3</td><td>Value objects</td><td>Entità immutabili, pattern matching, copyWith</td></tr>
+      <tr><td class="pkg-name">table_calendar</td><td class="pkg-ver">^3.1.2</td><td>Calendario turni</td><td>Altamente personalizzabile, eventi multipli per giorno</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.getElementById('page-' + name).classList.add('active')
+  el.classList.add('active')
+}
+function copyCode(btn) {
+  const block = btn.closest('.card')
+  const pre = block.querySelector('pre.dart') || block.querySelector('.tree')
+  if (!pre) return
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    const orig = btn.textContent
+    btn.textContent = 'COPIATO ✓'
+    setTimeout(() => btn.textContent = orig, 2000)
+  })
+}
+function copyTree(btn) { copyCode(btn) }
+</script>
+</body>
+</html>
