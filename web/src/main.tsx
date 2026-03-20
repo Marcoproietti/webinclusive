@@ -5,6 +5,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
+import { useThemeStore } from './store/theme.store'
+
+// Applica il tema salvato prima del render
+useThemeStore.getState().applyTheme()
 
 const queryClient = new QueryClient({
   defaultOptions: {
